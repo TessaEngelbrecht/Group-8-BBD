@@ -4,30 +4,37 @@ const { Server } = require('socket.io');
 const cors = require('cors');
 
 const app = express();
+
+// ✅ List of allowed frontend origins (local + Vercel)
+const allowedOrigins = [
+    'http://localhost:3000',
+    'https://group-8-54uy0qbaz-tessaengelbrechts-projects.vercel.app'
+];
+
+// ✅ CORS setup for REST and WebSocket preflight
 app.use(cors({
-    origin: [
-        'http://localhost:3000',
-        'https://group-8-bbd-production.up.railway.app'
-    ]
+    origin: allowedOrigins,
+    credentials: true
 }));
+
+// ✅ Create server and configure Socket.IO with same CORS
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: [
-            'http://localhost:3000',
-            'https://group-8-bbd-production.up.railway.app'
-        ],
-        methods: ['GET', 'POST']
+        origin: allowedOrigins,
+        methods: ['GET', 'POST'],
+        credentials: true
     }
 });
 
-
+// ✅ Store all active sessions
 const sessions = {}; // { sessionId: { hostId, players: [], spectators: [], started: false } }
 
 function makeCode() {
     return Math.floor(1000 + Math.random() * 9000).toString();
 }
 
+// ✅ Handle Socket.IO events
 io.on('connection', socket => {
     socket.on('createSession', ({ username }) => {
         const sessionId = makeCode();
@@ -67,11 +74,15 @@ io.on('connection', socket => {
             const idxS = s.spectators.findIndex(sp => sp.id === socket.id);
             if (idxP > -1) s.players.splice(idxP, 1);
             if (idxS > -1) s.spectators.splice(idxS, 1);
-            if (s.players.length === 0 && s.spectators.length === 0) delete sessions[sid];
-            else io.to(sid).emit('lobbyUpdate', s);
+            if (s.players.length === 0 && s.spectators.length === 0) {
+                delete sessions[sid];
+            } else {
+                io.to(sid).emit('lobbyUpdate', s);
+            }
         }
     });
 });
 
+// ✅ Dynamic port for Railway (fallback for local)
 const PORT = process.env.PORT || 4000;
-server.listen(PORT, () => console.log(`Server running on :${PORT}`));
+server.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
