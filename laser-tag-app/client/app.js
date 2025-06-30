@@ -1,4 +1,4 @@
-// ✅ laser-tag-static/app.js (Updated for colour detection instead of COCO-SSD)
+// ✅ laser-tag-static/app.js (Finalised with point logic, popups & leaderboard sync)
 const socket = io('https://group-8-bbd-production.up.railway.app', {
   transports: ['websocket']
 });
@@ -9,6 +9,7 @@ let isHost = false;
 let playerId = -1;
 let playerSymbol = null;
 let playerPoints = 100;
+let allPlayers = [];
 
 const colorAssignments = ['red', 'blue', 'green', 'yellow'];
 
@@ -17,7 +18,6 @@ const loginScreen = document.getElementById('login-screen');
 const chooseScreen = document.getElementById('choose-screen');
 const lobbyScreen = document.getElementById('lobby-screen');
 const gameScreen = document.getElementById('game-screen');
-const startDetectionBtn = document.getElementById('start-detect-btn');
 const videoElement = document.getElementById('webcam');
 const canvasElement = document.getElementById('overlay');
 const ctx = canvasElement.getContext('2d');
@@ -48,7 +48,6 @@ joinPlayerBtn.onclick = () => {
   if (sessionId) {
     socket.emit('joinSession', { username, sessionId, asSpectator: false });
   }
-
   switchScreen("choose-screen", "lobby-screen")
 };
 
@@ -69,7 +68,6 @@ copyGameIdBtn.onclick = () => {
   alert('Game code copied!');
 };
 
-// Socket handlers
 socket.on('sessionCreated', ({ sessionId: id, lobby }) => {
   isHost = true;
   sessionId = id;
@@ -103,6 +101,7 @@ function updateLobby(lobby) {
   const spectatorsList = document.getElementById('spectators-list');
   playersList.innerHTML = '';
   spectatorsList.innerHTML = '';
+  allPlayers = lobby.players.map((p, index) => ({ ...p, color: colorAssignments[index % colorAssignments.length], points: p.points ?? 100 }));
 
   lobby.players.forEach((p, index) => {
     const li = document.createElement('li');
@@ -131,6 +130,8 @@ function updateLobby(lobby) {
   } else {
     startGameBtn.classList.add('hidden');
   }
+
+  renderLeaderboard();
 }
 
 function assignPlayerSymbol(lobby) {
@@ -147,54 +148,100 @@ function startWebcam() {
     .then(stream => {
       videoElement.srcObject = stream;
       videoElement.play();
+      detectColorLoop();
     })
     .catch(err => {
       alert('Camera access denied or not available');
     });
 }
 
-// ✅ Colour detection instead of object detection
-let detectionInterval;
-
-startDetectionBtn.onclick = () => {
-  if (!playerSymbol) return alert('You have no assigned color.');
-  alert('🎯 Detection started');
-  detectColorLoop();
-};
-
 function detectColorLoop() {
-  detectionInterval = setInterval(() => {
+  setInterval(() => {
     ctx.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
     const frame = ctx.getImageData(0, 0, canvasElement.width, canvasElement.height);
     const data = frame.data;
 
-    let matchingPixels = 0;
+    let detectedColor = detectDominantColor(data);
 
-    for (let i = 0; i < data.length; i += 4) {
-      const r = data[i];
-      const g = data[i + 1];
-      const b = data[i + 2];
+    if (detectedColor && detectedColor !== playerSymbol.color) {
+      const victim = allPlayers.find(p => p.color === detectedColor);
 
-      if (isMatchingColor(r, g, b, playerSymbol.color)) {
-        matchingPixels++;
+      if (victim && victim.name !== username) {
+        const attacker = allPlayers.find(p => p.name === username);
+        if (attacker) attacker.points += 5;
+        victim.points -= 10;
+
+        if (victim.name === username) {
+          playerPoints = victim.points;
+        } else if (attacker) {
+          playerPoints = attacker.points;
+        }
+
+        document.getElementById('player-points').textContent = `Points: ${playerPoints}`;
+        renderLeaderboard();
+
+        const toast = document.createElement('div');
+        toast.textContent = `🎯 Detected ${detectedColor}! Points updated.`;
+        toast.style.position = 'absolute';
+        toast.style.top = '10px';
+        toast.style.left = '50%';
+        toast.style.transform = 'translateX(-50%)';
+        toast.style.backgroundColor = '#333';
+        toast.style.color = '#fff';
+        toast.style.padding = '10px 20px';
+        toast.style.borderRadius = '6px';
+        toast.style.zIndex = '9999';
+        document.body.appendChild(toast);
+        setTimeout(() => document.body.removeChild(toast), 2000);
+
+        if (playerPoints <= 0) {
+          alert('💀 Game Over! You are out.');
+          videoElement.pause();
+        }
       }
     }
-
-    if (matchingPixels > 2000) {
-      playerPoints -= 10;
-      document.getElementById('player-points').textContent = `Points: ${playerPoints}`;
-      alert(`💥 You got hit by ${playerSymbol.color} tag! -10 points`);
-      clearInterval(detectionInterval);
-    }
-  }, 500);
+  }, 700);
 }
 
-function isMatchingColor(r, g, b, targetColor) {
-  switch (targetColor) {
-    case 'red': return r > 180 && g < 100 && b < 100;
-    case 'blue': return b > 150 && r < 100 && g < 100;
-    case 'green': return g > 180 && r < 100 && b < 100;
-    case 'yellow': return r > 180 && g > 180 && b < 100;
-    default: return false;
+function detectDominantColor(data) {
+  let colorCounts = { red: 0, blue: 0, green: 0, yellow: 0 };
+
+  for (let i = 0; i < data.length; i += 4) {
+    const r = data[i];
+    const g = data[i + 1];
+    const b = data[i + 2];
+
+    if (r > 180 && g < 100 && b < 100) colorCounts.red++;
+    else if (b > 150 && r < 100 && g < 100) colorCounts.blue++;
+    else if (g > 180 && r < 100 && b < 100) colorCounts.green++;
+    else if (r > 180 && g > 180 && b < 100) colorCounts.yellow++;
   }
+
+  let dominant = null;
+  let maxCount = 2000;
+
+  for (const color in colorCounts) {
+    if (colorCounts[color] > maxCount) {
+      dominant = color;
+      maxCount = colorCounts[color];
+    }
+  }
+
+  return dominant;
+}
+
+function renderLeaderboard() {
+  const leaderboard = document.getElementById('leaderboard');
+  leaderboard.innerHTML = '<h3>Leaderboard</h3>';
+  const all = [...allPlayers];
+  const me = { name: username, color: playerSymbol?.color, points: playerPoints };
+  all.push(me);
+  const unique = new Map();
+  all.forEach(p => unique.set(p.name, p));
+  const sorted = [...unique.values()].sort((a, b) => b.points - a.points);
+  sorted.forEach(p => {
+    const li = document.createElement('div');
+    li.textContent = `${p.name} (${p.color}): ${p.points} pts`;
+    leaderboard.appendChild(li);
+  });
 }
