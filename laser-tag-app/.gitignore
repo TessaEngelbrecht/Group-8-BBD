@@ -1,0 +1,19 @@
+# ========== GENERAL ==========
+node_modules/
+.env
+.DS_Store
+*.log
+*.lock
+.vscode/
+dist/
+build/
+.trunk/
+
+# ========== BACKEND ==========
+server/node_modules/
+server/.env
+
+# ========== FRONTEND ==========
+client/node_modules/
+client/.env
+client/build/
