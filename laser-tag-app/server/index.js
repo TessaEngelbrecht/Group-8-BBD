@@ -8,7 +8,7 @@ const app = express();
 // ✅ List of allowed frontend origins (local + Vercel)
 const allowedOrigins = [
     'http://localhost:3000',
-    'https://group-8-54uy0qbaz-tessaengelbrechts-projects.vercel.app'
+    'https://group-8-bbd.vercel.app'
 ];
 
 // ✅ CORS setup for REST and WebSocket preflight
