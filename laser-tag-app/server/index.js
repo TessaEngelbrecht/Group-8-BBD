@@ -81,6 +81,12 @@ io.on('connection', socket => {
             }
         }
     });
+
+    //Snapshot
+    socket.on('playerSnapshot', ({ sessionId, username, image }) => {
+  io.to(sessionId).emit('snapshotUpdate', { username, image });
+});
+
 });
 
 // ✅ Dynamic port for Railway (fallback for local)

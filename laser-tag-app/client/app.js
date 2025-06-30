@@ -7,6 +7,9 @@ let username = '';
 let sessionId = '';
 let isHost = false;
 
+let isSpectator = false;
+let localVideoStreem= null;
+
 // DOM Elements
 const loginScreen = document.getElementById('login-screen');
 const chooseScreen = document.getElementById('choose-screen');
@@ -19,6 +22,8 @@ const joinPlayerBtn = document.getElementById('join-player-btn');
 const joinSpectatorBtn = document.getElementById('join-spectator-btn');
 const startGameBtn = document.getElementById('start-game-btn');
 const copyGameIdBtn = document.getElementById('copy-game-id-btn');
+
+const playerStatsList = document.getElementById('player-stats')
 
 continueBtn.onclick = () => {
   username = document.getElementById('username').value.trim();
@@ -38,19 +43,30 @@ joinPlayerBtn.onclick = () => {
     socket.emit('joinSession', { username, sessionId, asSpectator: false });
   }
 
+  startCamera();
+
+
   switchScreen("choose-screen", "lobby-screen")
+
+  startSendingSnapshots();
+
 };
 
 joinSpectatorBtn.onclick = () => {
   sessionId = joinCodeInput.value.trim();
   if (sessionId) {
+    isSpectator = true;
     socket.emit('joinSession', { username, sessionId, asSpectator: true });
   }
+
+  startCamera();
+
   switchScreen("choose-screen", "lobby-screen")
 };
 
 startGameBtn.onclick = () => {
   socket.emit('startGame', { sessionId });
+
 };
 
 copyGameIdBtn.onclick = () => {
@@ -70,14 +86,46 @@ socket.on('lobbyUpdate', lobby => {
   updateLobby(lobby);
 });
 
+socket.on('lobbyUpdate', lobby => {
+  updateLobby(lobby);
+  
+  if (isSpectator && document.getElementById('spectator-screen')?.classList.contains('hidden') === false) {
+    updateSpectatorView(lobby);
+  }
+});
+
+
 socket.on('gameStarted', lobby => {
   updateLobby(lobby);
   document.getElementById('game-status').textContent = 'Game Started!';
+
+  if(isSpectator){
+    switchScreen('lobby-screen', 'spectator-screen');
+    updateSpectatorView(lobby);
+  }
 });
 
 socket.on('errorMsg', msg => {
   alert(msg);
 });
+
+socket.on('snapshotUpdate', ({ username, image }) => {
+  // Create or update the image element for this player
+  const container = document.getElementById('video-section');
+  let img = document.getElementById(`snapshot-${username}`);
+
+  if (!img) {
+    img = document.createElement('img');
+    img.id = `snapshot-${username}`;
+    img.alt = username;
+    img.style = 'width: 100%; max-width: 250px; margin-bottom: 10px; border-radius: 10px;';
+    container.appendChild(img);
+  }
+
+  img.src = image;
+});
+
+
 
 // SCREEN SWITCHING
 function switchScreen(hideId, showId) {
@@ -119,3 +167,81 @@ function updateLobby(lobby) {
     startGameBtn.classList.add('hidden');
   }
 }
+
+//UPDATE SPECTATOR VIEW
+function updateSpectatorView(lobby) {
+  const playerStatsList = document.getElementById('player-stats');
+  playerStatsList.innerHTML = '';
+
+  lobby.players.forEach(player => {
+    const li = document.createElement('li');
+    li.textContent = `${player.name} | Health: ${player.health || 100} | Points: ${player.points || 0} | Weapon: ${player.weapon || 'None'}`;
+    playerStatsList.appendChild(li);
+  });
+}
+
+//CAMERA PERMISSION FUNCTION
+async function startCamera() {
+  try {
+    localVideoStream = await navigator.mediaDevices.getUserMedia({ video: true });
+    const videoEl = document.getElementById('camera-feed');
+    videoEl.srcObject = localVideoStream;
+  } catch (err) {
+    alert("Camera access is required to play or spectate.");
+    console.error("Camera error:", err);
+  }
+}
+
+//SENDING SNAPSHOTS FUNCTION
+function startSendingSnapshots() {
+  setInterval(() => {
+    if (!localVideoStream) return;
+
+    const video = document.getElementById('camera-feed');
+    const canvas = document.getElementById('snapshot-canvas');
+    const ctx = canvas.getContext('2d');
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const imageData = canvas.toDataURL('image/jpeg', 0.6); // Compress slightly
+
+    socket.emit('playerSnapshot', {
+      sessionId,
+      username,
+      image: imageData
+    });
+  }, 3000); // Every 3 seconds (adjust later)
+}
+
+
+//TEST SNAPSHOT
+
+async function startCameraAndSnapshot() {
+  const video = document.getElementById('test-video');
+  const canvas = document.getElementById('test-canvas');
+  const preview = document.getElementById('snapshot-preview');
+
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    video.srcObject = stream;
+
+    setInterval(() => {
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      const imageData = canvas.toDataURL('image/jpeg', 0.6);
+      preview.src = imageData; // Show snapshot
+    }, 1000); // Every 3 seconds
+  } catch (err) {
+    alert("Camera access is required.");
+    console.error(err);
+  }
+}
+
+//TEST SNAPSHOT
+
+

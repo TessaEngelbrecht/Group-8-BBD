@@ -51,6 +51,7 @@ h1, h2 {
   color: var(--primary-color);
   margin-bottom: 20px;
   animation: fadeInDown 0.5s ease;
+  /*text-align: center;*/
 }
 
 input[type="text"] {
@@ -209,4 +210,36 @@ button:disabled {
   input[type="text"], button {
       font-size: 14px;
   }
+}
+
+/*Spectator styling*/
+#video-section {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 30px;
+}
+
+.video-box {
+  width: 200px;
+  height: 120px;
+  background: #ddd;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  font-weight: bold;
+}
+
+/*#game-stats {
+  background: #4a90e2;
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}*/
+
+#player-stats li {
+  padding: 8px;
+  list-style-type:none;
 }
