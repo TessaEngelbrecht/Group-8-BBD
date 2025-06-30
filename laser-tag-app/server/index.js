@@ -4,11 +4,23 @@ const { Server } = require('socket.io');
 const cors = require('cors');
 
 const app = express();
-app.use(cors({ origin: 'http://localhost:3000' }));
+app.use(cors({
+    origin: [
+        'http://localhost:3000',
+        'https://group-8-bbd-production.up.railway.app'
+    ]
+}));
 const server = http.createServer(app);
 const io = new Server(server, {
-    cors: { origin: 'http://localhost:3000', methods: ['GET', 'POST'] }
+    cors: {
+        origin: [
+            'http://localhost:3000',
+            'https://group-8-bbd-production.up.railway.app'
+        ],
+        methods: ['GET', 'POST']
+    }
 });
+
 
 const sessions = {}; // { sessionId: { hostId, players: [], spectators: [], started: false } }
 
