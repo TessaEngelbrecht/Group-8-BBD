@@ -1,0 +1,212 @@
+:root {
+  --primary-color: #4a90e2;
+  --secondary-color: #f39c12;
+  --background-color: #f0f0f0;
+  --text-color: #333;
+  --shadow-color: rgba(0, 0, 0, 0.1);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Arial', sans-serif;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  /* padding: 20px; */
+}
+
+
+@media (max-width: 900px) {
+  body {
+      display: flex;
+      flex-direction: column;
+  }
+}
+#team-info {
+  font-size: 1.2em;
+  font-weight: bold;
+  margin: 10px 0;
+}
+
+.screen {
+  background-color: white;
+  border-radius: 15px;
+  padding: 30px;
+  box-shadow: 0 10px 20px var(--shadow-color);
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+h1, h2 {
+  color: var(--primary-color);
+  margin-bottom: 20px;
+  animation: fadeInDown 0.5s ease;
+}
+
+input[type="text"] {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 15px;
+  border: 2px solid var(--primary-color);
+  border-radius: 8px;
+  font-size: 16px;
+  transition: all 0.3s ease;
+}
+
+input[type="text"]:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.3);
+}
+
+button {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 10px;
+}
+
+button:hover:not(:disabled) {
+  background-color: #3a7bc8;
+  transform: translateY(-2px);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+#players-list,
+#spectators-list {
+  list-style-type: none;
+  padding: 0;
+  margin-top: 10px;
+}
+
+#players-list li,
+#spectators-list li {
+  background-color: var(--secondary-color);
+  color: white;
+  padding: 8px 12px;
+  margin-bottom: 5px;
+  border-radius: 5px;
+  animation: fadeIn 0.5s ease;
+}
+
+
+.hidden {
+  display: none;
+}
+
+#game-id-display {
+  background-color: #f0f0f0;
+  padding: 5px 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  display: inline-block;
+  margin-right: 10px;
+}
+
+#copy-game-id-btn {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+#copy-game-id-btn:hover {
+  background-color: #3a7bc8;
+}
+
+#timer-display {
+  margin-top: 10px;
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+}
+
+
+.toast {
+  visibility: hidden;
+  max-width: 300px;
+  background-color: rgba(51, 51, 51, 0.9); /* More opaque background */
+  color: #fff;
+  text-align: center;
+  border-radius: 8px; /* Rounded corners */
+  position: fixed;
+  z-index: 1;
+  left: 50%;
+  bottom: 30px;
+  font-size: 16px;
+  padding: 10px 20px; /* Add sufficient padding */
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3); /* Subtle shadow */
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.toast.show {
+  visibility: visible;
+  animation: fadeInOut 3s;
+}
+
+.game-canvas{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* width: 100vmin; */
+  /* height: 100vmin; */
+}
+
+
+@keyframes fadeInOut {
+  0%, 100% { opacity: 0; }
+  10%, 90% { opacity: 1; }
+}
+
+
+@keyframes fadeInDown {
+  from {
+      opacity: 0;
+      transform: translateY(-20px);
+  }
+  to {
+      opacity: 1;
+      transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+      opacity: 0;
+  }
+  to {
+      opacity: 1;
+  }
+}
+
+@media (max-width: 480px) {
+  .screen {
+      padding: 20px;
+  }
+
+  input[type="text"], button {
+      font-size: 14px;
+  }
+}

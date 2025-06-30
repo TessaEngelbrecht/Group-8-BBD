@@ -1,0 +1,46 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Laser Tag Lobby</title>
+    <link rel="stylesheet" href="style.css" />
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+</head>
+
+<body>
+
+    <div class="screen" id="login-screen">
+        <h2>Enter your username</h2>
+        <input type="text" id="username" />
+        <button id="continue-btn">Continue</button>
+    </div>
+
+    <div class="screen hidden" id="choose-screen">
+        <h2>Welcome, <span id="display-username"></span></h2>
+        <button id="create-session-btn">➕ Create New Game</button>
+        <input type="text" id="join-code" placeholder="Enter Session Code" />
+        <button id="join-player-btn">🎮 Join as Player</button>
+        <button id="join-spectator-btn">👁 Join as Spectator</button>
+    </div>
+
+    <div class="screen hidden" id="lobby-screen">
+        <h2>Session Lobby</h2>
+        <div>
+            <span id="game-id-display"></span>
+            <button id="copy-game-id-btn">Copy Code</button>
+        </div>
+        <h3>Players</h3>
+        <ul id="players-list"></ul>
+        <h3>Spectators</h3>
+        <ul id="spectators-list"></ul>
+        <p id="game-status"></p>
+        <button id="start-game-btn" class="hidden">Start Game</button>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
