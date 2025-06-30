@@ -7,6 +7,7 @@
   <title>Laser Tag Lobby</title>
   <link rel="stylesheet" href="style.css">
   <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.16.0"></script>
 </head>
 <body>
 
@@ -41,6 +42,19 @@
     <button id="start-game-btn" class="hidden">Start Game</button>
   </div>
 
+  <!-- GAME SCREEN -->
+  <div class="screen hidden" id="game-screen">
+    <h2>🎯 Laser Tag Arena</h2>
+    <p id="player-symbol"></p>
+    <p id="player-points"></p>
+    <video id="webcam" autoplay muted playsinline width="640" height="480"></video>
+    <canvas id="overlay" width="640" height="480"></canvas>
+    <button id="start-detect-btn">Start Detection</button>
+  </div>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.15.0/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
   <script src="app.js"></script>
 </body>
 </html>

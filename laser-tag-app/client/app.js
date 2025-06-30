@@ -1,4 +1,4 @@
-// app.js
+// ✅ laser-tag-static/app.js (Updated for colour detection instead of COCO-SSD)
 const socket = io('https://group-8-bbd-production.up.railway.app', {
   transports: ['websocket']
 });
@@ -6,12 +6,23 @@ const socket = io('https://group-8-bbd-production.up.railway.app', {
 let username = '';
 let sessionId = '';
 let isHost = false;
+let playerId = -1;
+let playerSymbol = null;
+let playerPoints = 100;
 
-// DOM Elements
+const colorAssignments = ['red', 'blue', 'green', 'yellow'];
+
+// DOM
 const loginScreen = document.getElementById('login-screen');
 const chooseScreen = document.getElementById('choose-screen');
 const lobbyScreen = document.getElementById('lobby-screen');
+const gameScreen = document.getElementById('game-screen');
+const startDetectionBtn = document.getElementById('start-detect-btn');
+const videoElement = document.getElementById('webcam');
+const canvasElement = document.getElementById('overlay');
+const ctx = canvasElement.getContext('2d');
 
+// Buttons
 const continueBtn = document.getElementById('continue-btn');
 const createBtn = document.getElementById('create-session-btn');
 const joinCodeInput = document.getElementById('join-code');
@@ -58,7 +69,7 @@ copyGameIdBtn.onclick = () => {
   alert('Game code copied!');
 };
 
-// SOCKET EVENTS
+// Socket handlers
 socket.on('sessionCreated', ({ sessionId: id, lobby }) => {
   isHost = true;
   sessionId = id;
@@ -72,31 +83,33 @@ socket.on('lobbyUpdate', lobby => {
 
 socket.on('gameStarted', lobby => {
   updateLobby(lobby);
-  document.getElementById('game-status').textContent = 'Game Started!';
+  assignPlayerSymbol(lobby);
+  switchScreen('lobby-screen', 'game-screen');
+  startWebcam();
 });
 
 socket.on('errorMsg', msg => {
   alert(msg);
 });
 
-// SCREEN SWITCHING
 function switchScreen(hideId, showId) {
   document.getElementById(hideId).classList.add('hidden');
   document.getElementById(showId).classList.remove('hidden');
 }
 
-// UPDATE LOBBY VIEW
 function updateLobby(lobby) {
   document.getElementById('game-id-display').textContent = sessionId;
-
   const playersList = document.getElementById('players-list');
   const spectatorsList = document.getElementById('spectators-list');
   playersList.innerHTML = '';
   spectatorsList.innerHTML = '';
 
-  lobby.players.forEach(p => {
+  lobby.players.forEach((p, index) => {
     const li = document.createElement('li');
-    li.textContent = p.name;
+    li.textContent = `${p.name} (${colorAssignments[index % colorAssignments.length]})`;
+    if (p.name === username) {
+      playerId = index;
+    }
     playersList.appendChild(li);
   });
 
@@ -117,5 +130,71 @@ function updateLobby(lobby) {
     startGameBtn.classList.remove('hidden');
   } else {
     startGameBtn.classList.add('hidden');
+  }
+}
+
+function assignPlayerSymbol(lobby) {
+  if (playerId >= 0) {
+    const color = colorAssignments[playerId % colorAssignments.length];
+    playerSymbol = { color };
+    document.getElementById('player-symbol').textContent = `Your tag color: ${playerSymbol.color}`;
+    document.getElementById('player-points').textContent = `Points: ${playerPoints}`;
+  }
+}
+
+function startWebcam() {
+  navigator.mediaDevices.getUserMedia({ video: true })
+    .then(stream => {
+      videoElement.srcObject = stream;
+      videoElement.play();
+    })
+    .catch(err => {
+      alert('Camera access denied or not available');
+    });
+}
+
+// ✅ Colour detection instead of object detection
+let detectionInterval;
+
+startDetectionBtn.onclick = () => {
+  if (!playerSymbol) return alert('You have no assigned color.');
+  alert('🎯 Detection started');
+  detectColorLoop();
+};
+
+function detectColorLoop() {
+  detectionInterval = setInterval(() => {
+    ctx.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
+    const frame = ctx.getImageData(0, 0, canvasElement.width, canvasElement.height);
+    const data = frame.data;
+
+    let matchingPixels = 0;
+
+    for (let i = 0; i < data.length; i += 4) {
+      const r = data[i];
+      const g = data[i + 1];
+      const b = data[i + 2];
+
+      if (isMatchingColor(r, g, b, playerSymbol.color)) {
+        matchingPixels++;
+      }
+    }
+
+    if (matchingPixels > 2000) {
+      playerPoints -= 10;
+      document.getElementById('player-points').textContent = `Points: ${playerPoints}`;
+      alert(`💥 You got hit by ${playerSymbol.color} tag! -10 points`);
+      clearInterval(detectionInterval);
+    }
+  }, 500);
+}
+
+function isMatchingColor(r, g, b, targetColor) {
+  switch (targetColor) {
+    case 'red': return r > 180 && g < 100 && b < 100;
+    case 'blue': return b > 150 && r < 100 && g < 100;
+    case 'green': return g > 180 && r < 100 && b < 100;
+    case 'yellow': return r > 180 && g > 180 && b < 100;
+    default: return false;
   }
 }
