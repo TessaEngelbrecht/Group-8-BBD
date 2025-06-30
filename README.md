@@ -1,72 +1,98 @@
-# Group-8-BBD
+### Group-8-BBD
+Tlou Models
 
-#################TLou Models#################
- MODELS PLAYER
- #############
- id 
- name 
- moves
- life
- points
- booster 
-############################################
-GLOBAL METHODS
-##############
- Methods:
-    Accumulate points
-    Move []  - Left, Right ,Down , Top
-    Life  +=100 
-    Death -=10 Decrement Life
-    BoostUP +=20.
-    Shoot - When you shoot the opponent, Gain points, Reduce Points.
+Player Model
+------------
+
+ Attribute  Description           
+ ----------------------
+ id       Unique identifier     
+ name     Player name           
+ moves    Movement capabilities 
+ health   Health points         
+ score    Player score          
+ booster  Current boost level   
+ weapon   Equipped weapon       
 
 
-    Laser - size, velocity, direction,
-    Point Method:
+Weapon Model
+------------
+Attribute      Description                           
+---------------------------
+ id          Unique identifier                     
+ name         Weapon name                           
+ health       Weapon durability or impact on health 
+ power_boost  Power or boost stats                  
 
-    getPosition
-    Reset
+Global Methods
+--------------
+Player Interaction
+------------------
+accumulatePoints() – Increases score
+move(direction) – Moves player: [Left, Right, Down, Up]
+life += 100 – Gain life
+death = 10 – Lose life
+boostUp += 20 – Increase boost
+shoot(target) – Attack: reduce opponent's points, increase own
+laser(size, velocity, direction) – Fire laser
 
-###########################################
-OBSTRUCTION
-###########
-
-id
-name
-position
-type
-
-Methods:
-Accumulate points
-Reduce Points
-Death
-Shoot
-
-###########################################
-ENEMY
-#####
-id
-Type
-position
-Methods:
-Accumulate Points
-Reduce Points
-Death
-Shoot
-
-###########################################
-LASOR
-#########
-
-id
-position
-type
-color
-size
-
-methods:
-shoot
-player can use the lasor.
+Utility Method
+---------------
+getPosition() – Get player position
+reset() – Reset player or game state
 
 
-    
+Obstruction Model
+-----------------
+ Attribute   Description         
+------------------------ 
+id        Unique identifier   
+name      Obstruction name    
+position  Coordinates on map  
+type       Type of obstruction 
+
+Methods
+-------
+accumulatePoints()
+reducePoints()
+death()
+shoot()
+
+Enemy Model
+-----------
+ Attribute   Description 
+ -----------------------        
+id        Unique identifier  
+type      Enemy type          
+position  Location on the map 
+
+Methods
+-------
+accumulatePoints()
+ reducePoints()F
+ death()
+ shoot()
+
+
+Laser Model
+-----------
+ Attribute   Description        
+------------------------
+ id        Unique identifier  
+ position  Location on map    
+ type      Type of laser      
+ color     Laser color        
+ size      Size of laser beam 
+
+Methods
+-------------
+ shoot()
+ Player can activate and use laser
+
+
+Dependencies
+------------
+ TensorFlow.js - tfjsmodel 
+ JavaScript (frontend) – Game logic & UI
+ Firebase.js – Realtime database or auth services
+
