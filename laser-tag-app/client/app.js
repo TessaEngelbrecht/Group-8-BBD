@@ -27,6 +27,11 @@ const joinPlayerBtn = document.getElementById('join-player-btn');
 const joinSpectatorBtn = document.getElementById('join-spectator-btn');
 const startGameBtn = document.getElementById('start-game-btn');
 const copyGameIdBtn = document.getElementById('copy-game-id-btn');
+const shootBtn = document.getElementById('shoot-btn');
+
+shootBtn.onclick = () => {
+  detectColor();
+};
 
 continueBtn.onclick = () => {
   username = document.getElementById('username').value.trim();
@@ -169,39 +174,40 @@ function fallbackToDefaultCamera() {
     .then(stream => {
       videoElement.srcObject = stream;
       videoElement.play();
-      detectColorLoop();
+      // detectColorLoop();
     })
     .catch(err => {
       alert('Camera access denied or not available');
     });
 }
 
+function detectColor() {
+  ctx.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
+  const frame = ctx.getImageData(0, 0, canvasElement.width, canvasElement.height);
+  const data = frame.data;
+
+  let detectedColor = detectDominantColor(data);
+
+  if (detectedColor && detectedColor !== playerTeam) {
+    socket.emit('teamHit', { sessionId, shooterTeam: playerTeam, victimTeam: detectedColor });
+    const toast = document.createElement('div');
+    toast.textContent = `🎯 Hit detected on ${detectedColor} team!`;
+    toast.style.position = 'absolute';
+    toast.style.top = '10px';
+    toast.style.left = '50%';
+    toast.style.transform = 'translateX(-50%)';
+    toast.style.backgroundColor = '#333';
+    toast.style.color = '#fff';
+    toast.style.padding = '10px 20px';
+    toast.style.borderRadius = '6px';
+    toast.style.zIndex = '9999';
+    document.body.appendChild(toast);
+    setTimeout(() => document.body.removeChild(toast), 2000);
+  }
+}
 
 function detectColorLoop() {
-  setInterval(() => {
-    ctx.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
-    const frame = ctx.getImageData(0, 0, canvasElement.width, canvasElement.height);
-    const data = frame.data;
-
-    let detectedColor = detectDominantColor(data);
-
-    if (detectedColor && detectedColor !== playerTeam) {
-      socket.emit('teamHit', { sessionId, shooterTeam: playerTeam, victimTeam: detectedColor });
-      const toast = document.createElement('div');
-      toast.textContent = `🎯 Hit detected on ${detectedColor} team!`;
-      toast.style.position = 'absolute';
-      toast.style.top = '10px';
-      toast.style.left = '50%';
-      toast.style.transform = 'translateX(-50%)';
-      toast.style.backgroundColor = '#333';
-      toast.style.color = '#fff';
-      toast.style.padding = '10px 20px';
-      toast.style.borderRadius = '6px';
-      toast.style.zIndex = '9999';
-      document.body.appendChild(toast);
-      setTimeout(() => document.body.removeChild(toast), 2000);
-    }
-  }, 700);
+  setInterval(detectColor, 700);
 }
 
 function detectDominantColor(data) {
