@@ -297,20 +297,24 @@ function renderLeaderboard() {
 }
 
 function updateUsageLog(modifiers = {}, purpleLeft = {}) {
-  const modLog = document.getElementById('modifiers-log');
-  const purpleLog = document.getElementById('purple-log');
+  const modLogs = document.getElementsByClassName('modifiers-log');
+  const purpleLogs = document.getElementsByClassName('purple-log');
 
-  modLog.innerHTML = `
-    <strong>🔥 Shot Damage Modifiers:</strong><br>
-    🔴 Red: ${modifiers?.red ?? '?'}<br>
-    🔵 Blue: ${modifiers?.blue ?? '?'}
-  `;
+  for (let i = 0; i < modLogs.length; i++) {
+    modLogs[i].innerHTML = `
+      <strong>🔥 Shot Damage Modifiers:</strong><br>
+      🔴 Red: ${modifiers?.red ?? '?'}<br>
+      🔵 Blue: ${modifiers?.blue ?? '?'}
+    `;
+  }
 
-  purpleLog.innerHTML = `
-    <strong>🍇 Purple Scans Left:</strong><br>
-    🔴 Red: ${purpleLeft?.red ?? '?'}<br>
-    🔵 Blue: ${purpleLeft?.blue ?? '?'}
-  `;
+  for (let i = 0; i < purpleLogs.length; i++) {
+    purpleLogs[i].innerHTML = `
+      <strong>🍇 Purple Scans Left:</strong><br>
+      🔴 Red: ${purpleLeft?.red ?? '?'}<br>
+      🔵 Blue: ${purpleLeft?.blue ?? '?'}
+    `;
+  }
 }
 
 
