@@ -83,18 +83,45 @@ io.on('connection', socket => {
         io.to(sessionId).emit('gameStarted', s);
     });
 
-    socket.on('teamHit', ({ sessionId, shooterTeam, victimTeam }) => {
+    const teamShotModifiers = {}; // sessionId -> { red: 3, blue: 3 }
+    const purpleScansRemaining = {}; // sessionId -> { red: 3, blue: 3 }
+
+    socket.on('teamHit', ({ sessionId, shooterTeam, victimTeam, scannedColor }) => {
         const s = sessions[sessionId];
         if (!s || !s.teamPoints || !s.teamPoints[shooterTeam] || !s.teamPoints[victimTeam]) return;
 
-        // Add and deduct points
-        s.teamPoints[shooterTeam] += 5;
-        s.teamPoints[victimTeam] -= 10;
+        if (!teamShotModifiers[sessionId]) {
+            teamShotModifiers[sessionId] = { red: 3, blue: 3 };
+        }
+        if (!purpleScansRemaining[sessionId]) {
+            purpleScansRemaining[sessionId] = { red: 3, blue: 3 };
+        }
 
-        // Clamp values to zero
-        if (s.teamPoints[victimTeam] < 0) s.teamPoints[victimTeam] = 0;
+        const mod = teamShotModifiers[sessionId][shooterTeam];
 
-        io.to(sessionId).emit('pointsUpdate', s.teamPoints);
+        if (scannedColor === 'purple') {
+            if (purpleScansRemaining[sessionId][shooterTeam] > 0) {
+                s.teamPoints[shooterTeam] += 10;
+                purpleScansRemaining[sessionId][shooterTeam]--;
+            }
+        } else if (scannedColor === 'yellow') {
+            if (teamShotModifiers[sessionId][shooterTeam] < 5) {
+                teamShotModifiers[sessionId][shooterTeam]++;
+            }
+        } else if (scannedColor === victimTeam) {
+            s.teamPoints[shooterTeam] += 1;
+            s.teamPoints[victimTeam] -= mod;
+            if (s.teamPoints[victimTeam] < 0) s.teamPoints[victimTeam] = 0;
+        }
+
+        // Inside teamHit (after updating teamPoints)
+        io.to(sessionId).emit('pointsUpdate', {
+            red: s.teamPoints.red,
+            blue: s.teamPoints.blue,
+            modifiers: teamShotModifiers[sessionId],
+            purpleLeft: purpleScansRemaining[sessionId]
+        });
+
     });
 
     socket.on('disconnect', () => {

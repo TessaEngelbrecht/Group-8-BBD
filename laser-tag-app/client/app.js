@@ -99,12 +99,14 @@ socket.on('gameStarted', lobby => {
 });
 
 
-socket.on('pointsUpdate', ({ red, blue }) => {
+socket.on('pointsUpdate', ({ red, blue, modifiers, purpleLeft }) => {
   teamPoints = { red, blue };
+  updateUsageLog(modifiers, purpleLeft);
   renderLeaderboard();
   updateSpectatorView({ players: allPlayers });
   checkGameOver();
 });
+
 
 
 socket.on('errorMsg', msg => {
@@ -228,10 +230,16 @@ function detectColor() {
 
   let detectedColor = detectDominantColor(data);
 
-  if (detectedColor && detectedColor !== playerTeam) {
-    socket.emit('teamHit', { sessionId, shooterTeam: playerTeam, victimTeam: detectedColor });
+  if (detectedColor) {
+    socket.emit('teamHit', {
+      sessionId,
+      shooterTeam: playerTeam,
+      victimTeam: playerTeam === 'red' ? 'blue' : 'red',
+      scannedColor: detectedColor
+    });
+
     const toast = document.createElement('div');
-    toast.textContent = `🎯 Hit detected on ${detectedColor} team!`;
+    toast.textContent = `🟡 Scanned: ${detectedColor.toUpperCase()}`;
     toast.style.position = 'absolute';
     toast.style.top = '10px';
     toast.style.left = '50%';
@@ -245,13 +253,12 @@ function detectColor() {
     setTimeout(() => document.body.removeChild(toast), 2000);
   }
 }
-
 function detectColorLoop() {
   setInterval(detectColor, 700);
 }
 
 function detectDominantColor(data) {
-  let colorCounts = { red: 0, blue: 0 };
+  let colorCounts = { red: 0, blue: 0, purple: 0, yellow: 0 };
 
   for (let i = 0; i < data.length; i += 4) {
     const r = data[i];
@@ -260,6 +267,8 @@ function detectDominantColor(data) {
 
     if (r > 180 && g < 100 && b < 100) colorCounts.red++;
     else if (b > 150 && r < 100 && g < 100) colorCounts.blue++;
+    else if (r > 100 && b > 100 && g < 80) colorCounts.purple++;
+    else if (r > 200 && g > 200 && b < 100) colorCounts.yellow++; // 💡 new
   }
 
   let dominant = null;
@@ -275,6 +284,7 @@ function detectDominantColor(data) {
   return dominant;
 }
 
+
 function renderLeaderboard() {
   const leaderboard = document.getElementById('leaderboard');
   leaderboard.innerHTML = '<h3>Leaderboard</h3>';
@@ -285,6 +295,24 @@ function renderLeaderboard() {
   leaderboard.appendChild(red);
   leaderboard.appendChild(blue);
 }
+
+function updateUsageLog(modifiers = {}, purpleLeft = {}) {
+  const modLog = document.getElementById('modifiers-log');
+  const purpleLog = document.getElementById('purple-log');
+
+  modLog.innerHTML = `
+    <strong>🔥 Shot Damage Modifiers:</strong><br>
+    🔴 Red: ${modifiers?.red ?? '?'}<br>
+    🔵 Blue: ${modifiers?.blue ?? '?'}
+  `;
+
+  purpleLog.innerHTML = `
+    <strong>🍇 Purple Scans Left:</strong><br>
+    🔴 Red: ${purpleLeft?.red ?? '?'}<br>
+    🔵 Blue: ${purpleLeft?.blue ?? '?'}
+  `;
+}
+
 
 function checkGameOver() {
   if (teamPoints[playerTeam] <= 0) {
