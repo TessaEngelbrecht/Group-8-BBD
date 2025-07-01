@@ -49,7 +49,15 @@ io.on('connection', socket => {
 
     socket.on('joinSession', ({ username, sessionId, asSpectator }) => {
         const s = sessions[sessionId];
-        if (!s) return socket.emit('errorMsg', 'Session not found');
+
+        if (!s) {
+            return socket.emit('errorMsg', '❌ Session does not exist.');
+        }
+
+        if (s.started && !asSpectator) {
+            return socket.emit('errorMsg', '❌ Game has already started. You can only join as a spectator.');
+        }
+
         socket.join(sessionId);
 
         if (asSpectator) {
@@ -60,6 +68,7 @@ io.on('connection', socket => {
 
         io.to(sessionId).emit('lobbyUpdate', s);
     });
+
 
     socket.on('startGame', ({ sessionId }) => {
         const s = sessions[sessionId];
