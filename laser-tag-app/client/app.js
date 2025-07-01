@@ -1,4 +1,4 @@
-// ✅ laser-tag-static/app.js (Finalised with point logic, popups & leaderboard sync)
+// ✅ laser-tag-static/app.js (Finalised for Team Points, Sockets, Sync)
 const socket = io('https://group-8-bbd-production.up.railway.app', {
   transports: ['websocket']
 });
@@ -6,12 +6,9 @@ const socket = io('https://group-8-bbd-production.up.railway.app', {
 let username = '';
 let sessionId = '';
 let isHost = false;
-let playerId = -1;
-let playerSymbol = null;
-let playerPoints = 100;
-let allPlayers = [];
-
-const colorAssignments = ['red', 'blue', 'green', 'yellow'];
+let playerTeam = null;
+let teamPoints = { red: 100, blue: 100 };
+let allPlayers = []; // [{ name, team }]
 
 // DOM
 const loginScreen = document.getElementById('login-screen');
@@ -81,9 +78,15 @@ socket.on('lobbyUpdate', lobby => {
 
 socket.on('gameStarted', lobby => {
   updateLobby(lobby);
-  assignPlayerSymbol(lobby);
+  assignTeam(lobby);
   switchScreen('lobby-screen', 'game-screen');
   startWebcam();
+});
+
+socket.on('pointsUpdate', ({ red, blue }) => {
+  teamPoints = { red, blue };
+  renderLeaderboard();
+  checkGameOver();
 });
 
 socket.on('errorMsg', msg => {
@@ -101,14 +104,14 @@ function updateLobby(lobby) {
   const spectatorsList = document.getElementById('spectators-list');
   playersList.innerHTML = '';
   spectatorsList.innerHTML = '';
-  allPlayers = lobby.players.map((p, index) => ({ ...p, color: colorAssignments[index % colorAssignments.length], points: p.points ?? 100 }));
+  allPlayers = lobby.players;
 
-  lobby.players.forEach((p, index) => {
+  const teamCounts = { red: 0, blue: 0 };
+
+  allPlayers.forEach((p, i) => {
     const li = document.createElement('li');
-    li.textContent = `${p.name} (${colorAssignments[index % colorAssignments.length]})`;
-    if (p.name === username) {
-      playerId = index;
-    }
+    const team = i % 2 === 0 ? 'red' : 'blue';
+    li.textContent = `${p.name} (${team})`;
     playersList.appendChild(li);
   });
 
@@ -120,12 +123,12 @@ function updateLobby(lobby) {
 
   const statusText = lobby.started
     ? 'Game Started!'
-    : lobby.players.length < 2
-      ? 'Waiting for 1 more player...'
+    : lobby.players.length < 2 || lobby.players.length % 2 !== 0
+      ? 'Waiting for even number of players (minimum 2)...'
       : 'Ready to start!';
   document.getElementById('game-status').textContent = statusText;
 
-  if (isHost && !lobby.started && lobby.players.length >= 2) {
+  if (isHost && !lobby.started && lobby.players.length >= 2 && lobby.players.length % 2 === 0) {
     startGameBtn.classList.remove('hidden');
   } else {
     startGameBtn.classList.add('hidden');
@@ -134,12 +137,11 @@ function updateLobby(lobby) {
   renderLeaderboard();
 }
 
-function assignPlayerSymbol(lobby) {
-  if (playerId >= 0) {
-    const color = colorAssignments[playerId % colorAssignments.length];
-    playerSymbol = { color };
-    document.getElementById('player-symbol').textContent = `Your tag color: ${playerSymbol.color}`;
-    document.getElementById('player-points').textContent = `Points: ${playerPoints}`;
+function assignTeam(lobby) {
+  const index = lobby.players.findIndex(p => p.name === username);
+  if (index !== -1) {
+    playerTeam = index % 2 === 0 ? 'red' : 'blue';
+    document.getElementById('player-symbol').textContent = `You are on team: ${playerTeam.toUpperCase()}`;
   }
 }
 
@@ -163,48 +165,27 @@ function detectColorLoop() {
 
     let detectedColor = detectDominantColor(data);
 
-    if (detectedColor && detectedColor !== playerSymbol.color) {
-      const victim = allPlayers.find(p => p.color === detectedColor);
-
-      if (victim && victim.name !== username) {
-        const attacker = allPlayers.find(p => p.name === username);
-        if (attacker) attacker.points += 5;
-        victim.points -= 10;
-
-        if (victim.name === username) {
-          playerPoints = victim.points;
-        } else if (attacker) {
-          playerPoints = attacker.points;
-        }
-
-        document.getElementById('player-points').textContent = `Points: ${playerPoints}`;
-        renderLeaderboard();
-
-        const toast = document.createElement('div');
-        toast.textContent = `🎯 Detected ${detectedColor}! Points updated.`;
-        toast.style.position = 'absolute';
-        toast.style.top = '10px';
-        toast.style.left = '50%';
-        toast.style.transform = 'translateX(-50%)';
-        toast.style.backgroundColor = '#333';
-        toast.style.color = '#fff';
-        toast.style.padding = '10px 20px';
-        toast.style.borderRadius = '6px';
-        toast.style.zIndex = '9999';
-        document.body.appendChild(toast);
-        setTimeout(() => document.body.removeChild(toast), 2000);
-
-        if (playerPoints <= 0) {
-          alert('💀 Game Over! You are out.');
-          videoElement.pause();
-        }
-      }
+    if (detectedColor && detectedColor !== playerTeam) {
+      socket.emit('teamHit', { sessionId, shooterTeam: playerTeam, victimTeam: detectedColor });
+      const toast = document.createElement('div');
+      toast.textContent = `🎯 Hit detected on ${detectedColor} team!`;
+      toast.style.position = 'absolute';
+      toast.style.top = '10px';
+      toast.style.left = '50%';
+      toast.style.transform = 'translateX(-50%)';
+      toast.style.backgroundColor = '#333';
+      toast.style.color = '#fff';
+      toast.style.padding = '10px 20px';
+      toast.style.borderRadius = '6px';
+      toast.style.zIndex = '9999';
+      document.body.appendChild(toast);
+      setTimeout(() => document.body.removeChild(toast), 2000);
     }
   }, 700);
 }
 
 function detectDominantColor(data) {
-  let colorCounts = { red: 0, blue: 0, green: 0, yellow: 0 };
+  let colorCounts = { red: 0, blue: 0 };
 
   for (let i = 0; i < data.length; i += 4) {
     const r = data[i];
@@ -213,8 +194,6 @@ function detectDominantColor(data) {
 
     if (r > 180 && g < 100 && b < 100) colorCounts.red++;
     else if (b > 150 && r < 100 && g < 100) colorCounts.blue++;
-    else if (g > 180 && r < 100 && b < 100) colorCounts.green++;
-    else if (r > 180 && g > 180 && b < 100) colorCounts.yellow++;
   }
 
   let dominant = null;
@@ -233,15 +212,17 @@ function detectDominantColor(data) {
 function renderLeaderboard() {
   const leaderboard = document.getElementById('leaderboard');
   leaderboard.innerHTML = '<h3>Leaderboard</h3>';
-  const all = [...allPlayers];
-  const me = { name: username, color: playerSymbol?.color, points: playerPoints };
-  all.push(me);
-  const unique = new Map();
-  all.forEach(p => unique.set(p.name, p));
-  const sorted = [...unique.values()].sort((a, b) => b.points - a.points);
-  sorted.forEach(p => {
-    const li = document.createElement('div');
-    li.textContent = `${p.name} (${p.color}): ${p.points} pts`;
-    leaderboard.appendChild(li);
-  });
+  const red = document.createElement('div');
+  red.textContent = `🔴 RED TEAM: ${teamPoints.red} pts`;
+  const blue = document.createElement('div');
+  blue.textContent = `🔵 BLUE TEAM: ${teamPoints.blue} pts`;
+  leaderboard.appendChild(red);
+  leaderboard.appendChild(blue);
+}
+
+function checkGameOver() {
+  if (teamPoints[playerTeam] <= 0) {
+    alert('💀 Your team is out of points. Game Over!');
+    videoElement.pause();
+  }
 }
