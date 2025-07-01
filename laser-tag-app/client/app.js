@@ -109,7 +109,12 @@ socket.on('pointsUpdate', ({ red, blue }) => {
 
 socket.on('errorMsg', msg => {
   alert(msg);
+  if (msg.includes('Username already taken')) {
+    switchScreen('choose-screen', 'login-screen');
+    document.getElementById('username').value = '';
+  }
 });
+
 function updateSpectatorView(lobby) {
   const redList = document.getElementById('red-team-list');
   const blueList = document.getElementById('blue-team-list');

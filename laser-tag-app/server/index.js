@@ -58,6 +58,11 @@ io.on('connection', socket => {
             return socket.emit('errorMsg', '❌ Game has already started. You cannot join at this stage.');
         }
 
+        const nameTaken = s.players.concat(s.spectators).some(p => p.name === username);
+        if (nameTaken) {
+            return socket.emit('errorMsg', '❌ Username already taken in this session.');
+        }
+
         socket.join(sessionId);
 
         if (asSpectator) {
@@ -68,7 +73,6 @@ io.on('connection', socket => {
 
         io.to(sessionId).emit('lobbyUpdate', s);
     });
-
 
     socket.on('startGame', ({ sessionId }) => {
         const s = sessions[sessionId];
