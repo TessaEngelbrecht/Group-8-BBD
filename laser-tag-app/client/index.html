@@ -1,4 +1,3 @@
-<!-- index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,9 +6,9 @@
   <title>Laser Tag Lobby</title>
   <link rel="stylesheet" href="style.css">
   <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.16.0"></script>
 </head>
 <body>
-
   <!-- LOGIN SCREEN -->
   <div class="screen" id="login-screen">
     <h2>Enter your username</h2>
@@ -41,6 +40,34 @@
     <button id="start-game-btn" class="hidden">Start Game</button>
   </div>
 
+  <!-- GAME SCREEN (Players) -->
+  <div class="screen hidden" id="game-screen">
+    <div class="hud">
+      <span id="player-hp">HP: 50</span>
+      <span id="player-score">Score: 0</span>
+      <span id="player-kills">Kills: 0</span>
+    </div>
+    <div class="game-container">
+      <video id="webcam" autoplay muted playsinline></video>
+      <canvas id="overlay" class="scope"></canvas>
+    </div>
+    <button id="shoot-btn">SHOOT</button>
+  </div>
+
+  <!-- SPECTATOR SCREEN -->
+  <div class="screen hidden" id="spectator-screen">
+    <h2>👁 Spectator View</h2>
+    <div id="spectator-leaderboard"></div>
+    <div class="spectator-video-container">
+      <h3>Watching: <span id="current-player"></span></h3>
+      <video id="spectator-video" autoplay playsinline width="640" height="480"></video>
+    </div>
+  </div>
+
+  <div id="leaderboard"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.15.0/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
   <script src="app.js"></script>
 </body>
 </html>

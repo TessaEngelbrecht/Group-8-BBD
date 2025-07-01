@@ -4,6 +4,7 @@
   --background-color: #f0f0f0;
   --text-color: #333;
   --shadow-color: rgba(0, 0, 0, 0.1);
+  --crosshair-color: #ffffff;
 }
 
 * {
@@ -20,9 +21,7 @@ body {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  /* padding: 20px; */
 }
-
 
 @media (max-width: 900px) {
   body {
@@ -30,6 +29,7 @@ body {
       flex-direction: column;
   }
 }
+
 #team-info {
   font-size: 1.2em;
   font-weight: bold;
@@ -42,7 +42,7 @@ body {
   padding: 30px;
   box-shadow: 0 10px 20px var(--shadow-color);
   width: 100%;
-  max-width: 400px;
+  max-width: 700px;
   text-align: center;
   transition: all 0.3s ease;
 }
@@ -91,14 +91,16 @@ button:disabled {
 }
 
 #players-list,
-#spectators-list {
+#spectators-list,
+#spectator-leaderboard {
   list-style-type: none;
   padding: 0;
   margin-top: 10px;
 }
 
 #players-list li,
-#spectators-list li {
+#spectators-list li,
+#spectator-leaderboard div {
   background-color: var(--secondary-color);
   color: white;
   padding: 8px 12px;
@@ -107,6 +109,13 @@ button:disabled {
   animation: fadeIn 0.5s ease;
 }
 
+#spectator-leaderboard div {
+  cursor: pointer;
+}
+
+#spectator-leaderboard div:hover {
+  background-color: #e68a00;
+}
 
 .hidden {
   display: none;
@@ -142,21 +151,103 @@ button:disabled {
   color: #333;
 }
 
+.spectator-video-container {
+  margin-top: 20px;
+}
+
+.game-container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.hud {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  display: flex;
+  gap: 20px;
+  z-index: 10;
+}
+
+.hud span {
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 5px 10px;
+  border-radius: 5px;
+}
+
+#webcam {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.scope {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 150px;
+  height: 150px;
+  border: 3px solid var(--crosshair-color);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.scope::before, .scope::after {
+  content: '';
+  position: absolute;
+  background-color: var(--crosshair-color);
+  width: 2px;
+  height: 40px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.scope::after {
+  width: 40px;
+  height: 2px;
+}
+
+#shoot-btn {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 15px 30px;
+  font-size: 18px;
+  font-weight: bold;
+  background-color: #333;
+  border: none;
+  color: white;
+  border-radius: 10px;
+  z-index: 10;
+}
+
+#shoot-btn:hover {
+  background-color: #555;
+}
 
 .toast {
   visibility: hidden;
   max-width: 300px;
-  background-color: rgba(51, 51, 51, 0.9); /* More opaque background */
+  background-color: rgba(51, 51, 51, 0.9);
   color: #fff;
   text-align: center;
-  border-radius: 8px; /* Rounded corners */
+  border-radius: 8px;
   position: fixed;
   z-index: 1;
   left: 50%;
   bottom: 30px;
   font-size: 16px;
-  padding: 10px 20px; /* Add sufficient padding */
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3); /* Subtle shadow */
+  padding: 10px 20px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
   transform: translateX(-50%);
   white-space: nowrap;
 }
@@ -166,20 +257,16 @@ button:disabled {
   animation: fadeInOut 3s;
 }
 
-.game-canvas{
+.game-canvas {
   display: flex;
   justify-content: center;
   align-items: center;
-  /* width: 100vmin; */
-  /* height: 100vmin; */
 }
-
 
 @keyframes fadeInOut {
   0%, 100% { opacity: 0; }
   10%, 90% { opacity: 1; }
 }
-
 
 @keyframes fadeInDown {
   from {
@@ -208,5 +295,15 @@ button:disabled {
 
   input[type="text"], button {
       font-size: 14px;
+  }
+
+  .scope {
+    width: 100px;
+    height: 100px;
+  }
+
+  #shoot-btn {
+    padding: 10px 20px;
+    font-size: 16px;
   }
 }
