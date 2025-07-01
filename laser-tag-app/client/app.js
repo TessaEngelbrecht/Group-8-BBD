@@ -146,6 +146,25 @@ function assignTeam(lobby) {
 }
 
 function startWebcam() {
+  const constraints = {
+    video: {
+      facingMode: { exact: "environment" } // Tries to use the back camera
+    }
+  };
+
+  navigator.mediaDevices.getUserMedia(constraints)
+    .then(stream => {
+      videoElement.srcObject = stream;
+      videoElement.play();
+      detectColorLoop();
+    })
+    .catch(err => {
+      console.warn('Could not use back camera. Falling back to default.', err);
+      fallbackToDefaultCamera();
+    });
+}
+
+function fallbackToDefaultCamera() {
   navigator.mediaDevices.getUserMedia({ video: true })
     .then(stream => {
       videoElement.srcObject = stream;
@@ -156,6 +175,7 @@ function startWebcam() {
       alert('Camera access denied or not available');
     });
 }
+
 
 function detectColorLoop() {
   setInterval(() => {
