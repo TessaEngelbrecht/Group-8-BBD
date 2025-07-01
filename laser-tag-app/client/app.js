@@ -161,7 +161,7 @@ function startWebcam() {
     .then(stream => {
       videoElement.srcObject = stream;
       videoElement.play();
-      detectColorLoop();
+      // detectColorLoop();
     })
     .catch(err => {
       console.warn('Could not use back camera. Falling back to default.', err);
