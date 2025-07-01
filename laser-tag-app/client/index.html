@@ -7,6 +7,7 @@
   <title>Laser Tag Lobby</title>
   <link rel="stylesheet" href="style.css">
   <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.16.0"></script>
 </head>
 <body>
 
@@ -19,7 +20,7 @@
 
   <!-- CHOOSE SCREEN -->
   <div class="screen hidden" id="choose-screen">
-    <h2>Welcome, <span id="display-username"></span></h2>
+    <h2>Welcome special agent, <span id="display-username"></span></h2>
     <button id="create-session-btn">➕ Create New Game</button>
     <input type="text" id="join-code" placeholder="Enter Session Code" />
     <button id="join-player-btn">🎮 Join as Player</button>
@@ -41,6 +42,193 @@
     <button id="start-game-btn" class="hidden">Start Game</button>
   </div>
 
+
+  <!-- GAME SCREEN WITH TABS -->
+  <div class="screen hidden" id="game-screen">
+    <h2>🎯 Laser Tag Arena</h2>
+    <button id="settings-btn" style="position:absolute;top:18px;right:18px;background:#222;color:#fff;border:1.5px solid #ff0033;border-radius:8px;padding:6px 18px;font-size:1em;z-index:10;">Settings</button>
+    <div id="settings-modal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.6);z-index:1000;align-items:center;justify-content:center;">
+      <div style="background:#181818;padding:32px 28px;border-radius:14px;box-shadow:0 0 16px #ff0033,0 0 4px #000;max-width:320px;margin:auto;text-align:center;">
+        <h3 style="color:#ff0033;margin-bottom:18px;">Settings</h3>
+        <label style="font-size:1.1em;">
+          <input type="checkbox" id="toggle-ambient" checked style="margin-right:8px;"> Ambient Sound
+        </label>
+        <br><br>
+        <button id="close-settings" style="margin-top:10px;">Close</button>
+      </div>
+    </div>
+    <div class="tab-buttons">
+      <button id="tab-you" class="tab-btn active">You</button>
+      <button id="tab-enemy" class="tab-btn">Enemy</button>
+    </div>
+    <div id="tab-content-you" class="tab-content">
+      <p id="player-symbol"></p>
+      <p id="player-points"></p>
+      <p id="player-ammo"></p>
+      <video id="webcam" autoplay muted playsinline width="640" height="480"></video>
+      <canvas id="overlay" width="640" height="480"></canvas>
+      <button id="start-detect-btn">Start Detection</button>
+      <button id="shoot-btn" style="width:100%;margin-top:10px;font-size:1.1em;">Shoot</button>
+    </div>
+    <div id="tab-content-enemy" class="tab-content" style="display:none">
+      <p id="enemy-symbol"></p>
+      <p id="enemy-points"></p>
+      <p id="enemy-ammo"></p>
+    </div>
+  </div>
+  <div id="leaderboard" style="display:none;"></div>
+
+
+  <!-- Shoot sound effect -->
+  <audio id="shoot-sound" src="shoot2.mp3" preload="auto"></audio>
+  <!-- Ambient eerie sound effect -->
+  <audio id="ambient-sound" src="ambient-piano.mp3" preload="auto"></audio>
+
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.15.0/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
   <script src="app.js"></script>
+  <style>
+    body {
+      background: #181818;
+      color: #fff;
+      font-family: 'Orbitron', 'Segoe UI', Arial, sans-serif;
+      transition: background 1s;
+      margin: 0;
+      min-height: 100vh;
+    }
+    .screen {
+      background: rgba(10,0,0,0.92);
+      border-radius: 18px;
+      box-shadow: 0 0 40px #ff0033, 0 0 8px #000;
+      padding: 36px 28px 28px 28px;
+      margin: 36px auto;
+      max-width: 500px;
+      min-width: 320px;
+      position: relative;
+    }
+    #game-screen h2 {
+      color: #ff0033;
+      text-shadow: 0 0 16px #ff0033, 0 0 4px #fff;
+      letter-spacing: 2px;
+      margin-bottom: 18px;
+    }
+    .tab-buttons {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 18px;
+      gap: 8px;
+    }
+    .tab-btn {
+      background: #222;
+      color: #ff0033;
+      border: 1.5px solid #ff0033;
+      border-radius: 10px 10px 0 0;
+      padding: 10px 32px;
+      font-size: 1.1em;
+      font-family: inherit;
+      box-shadow: 0 0 4px #ff0033;
+      cursor: pointer;
+      outline: none;
+      transition: background 0.2s, color 0.2s;
+    }
+    .tab-btn.active {
+      background: #ff0033;
+      color: #fff;
+      border-bottom: 2.5px solid #181818;
+    }
+    .tab-content {
+      display: block;
+      background: rgba(30,0,0,0.85);
+      border-radius: 0 0 14px 14px;
+      box-shadow: 0 0 12px #ff0033, 0 0 2px #000;
+      padding: 18px 18px 10px 18px;
+      margin-bottom: 10px;
+      min-height: 120px;
+    }
+    #player-symbol, #player-points, #player-ammo, #enemy-symbol, #enemy-points, #enemy-ammo {
+      font-size: 1.15em;
+      text-shadow: 0 0 8px #ff0033, 0 0 2px #fff;
+      margin: 8px 0 4px 0;
+      letter-spacing: 1px;
+    }
+    #webcam, #overlay {
+      border-radius: 10px;
+      box-shadow: 0 0 12px #ff0033, 0 0 2px #000;
+      margin: 10px 0 8px 0;
+      max-width: 100%;
+      display: block;
+      cursor: crosshair;
+    }
+    #start-detect-btn {
+      margin-top: 10px;
+      width: 100%;
+      font-size: 1.1em;
+      padding: 12px 0;
+      border-radius: 8px;
+    }
+    #leaderboard {
+      margin: 36px auto 0 auto;
+      max-width: 420px;
+      background: rgba(20,0,0,0.8);
+      border-radius: 14px;
+      box-shadow: 0 0 16px #ff0033, 0 0 4px #000;
+      padding: 20px 18px 28px 18px;
+    }
+    .eerie-flicker {
+      animation: flicker 2s infinite alternate;
+    }
+    @keyframes flicker {
+      0% { filter: brightness(1); }
+      10% { filter: brightness(0.8); }
+      20% { filter: brightness(1.1); }
+      30% { filter: brightness(0.7); }
+      40% { filter: brightness(1.2); }
+      100% { filter: brightness(1); }
+    }
+    button {
+      background: #ff0033;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 26px;
+      font-size: 1.08em;
+      margin: 10px 0;
+      box-shadow: 0 0 8px #ff0033, 0 0 2px #000;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+    button:hover {
+      background: #fff;
+      color: #ff0033;
+    }
+    input[type="text"] {
+      background: #222;
+      color: #fff;
+      border: 1.5px solid #ff0033;
+      border-radius: 8px;
+      padding: 10px 14px;
+      margin: 10px 0;
+      font-size: 1.08em;
+      box-shadow: 0 0 4px #ff0033;
+      width: 100%;
+      outline: none;
+      transition: border 0.2s;
+    }
+    input[type="text"]:focus {
+      border: 2px solid #fff;
+    }
+    /* Info card for game over or alerts (optional) */
+    .info-card {
+      background: rgba(30,0,0,0.92);
+      border-radius: 14px;
+      box-shadow: 0 0 16px #ff0033, 0 0 4px #000;
+      padding: 32px 24px;
+      color: #fff;
+      text-align: center;
+      font-size: 1.2em;
+      margin: 40px auto;
+      max-width: 400px;
+    }
+  </style>
 </body>
 </html>
