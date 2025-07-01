@@ -19,6 +19,11 @@ const videoElement = document.getElementById('webcam');
 const canvasElement = document.getElementById('overlay');
 const ctx = canvasElement.getContext('2d');
 
+const timerDisplay = document.getElementById('game-timer');
+const gameOverOverlay = document.getElementById('game-over-overlay');
+const winnerText = document.getElementById('winner-text');
+
+
 // Buttons
 const continueBtn = document.getElementById('continue-btn');
 const createBtn = document.getElementById('create-session-btn');
@@ -106,6 +111,25 @@ socket.on('pointsUpdate', ({ red, blue, modifiers, purpleLeft }) => {
   updateSpectatorView({ players: allPlayers });
   checkGameOver();
 });
+
+socket.on('timerUpdate', seconds => {
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  timerDisplay.textContent = `⏱️ ${mins}:${secs.toString().padStart(2, '0')}`;
+});
+
+socket.on('gameEnded', winner => {
+  videoElement.pause();
+  gameOverOverlay.classList.remove('hidden');
+  if (winner === 'draw') {
+    winnerText.textContent = `🤝 It's a DRAW!`;
+  } else if (playerTeam === winner) {
+    winnerText.textContent = `🏆 Your Team (${winner.toUpperCase()}) WON!`;
+  } else {
+    winnerText.textContent = `💀 Your Team LOST...`;
+  }
+});
+
 
 
 

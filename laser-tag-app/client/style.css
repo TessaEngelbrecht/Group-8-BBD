@@ -210,3 +210,21 @@ button:disabled {
       font-size: 14px;
   }
 }
+
+.screen.hidden {
+  display: none;
+}
+
+#game-over-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.85);
+  color: white;
+  font-size: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+}

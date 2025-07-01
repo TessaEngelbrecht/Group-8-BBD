@@ -39,6 +39,8 @@ io.on('connection', socket => {
     socket.on('createSession', ({ username }) => {
         const sessionId = makeCode();
         sessions[sessionId] = {
+            timer: 180, // 3 minutes
+            interval: null,
             hostId: socket.id,
             players: [{ id: socket.id, name: username }],
             spectators: [],
@@ -79,21 +81,44 @@ io.on('connection', socket => {
     socket.on('startGame', ({ sessionId }) => {
         const s = sessions[sessionId];
         if (!s) return;
+
+        // Only host can start & we need an even number of players (minimum 2)
         if (socket.id !== s.hostId || s.players.length < 2 || s.players.length % 2 !== 0) return;
 
         s.started = true;
         teamShotModifiers[sessionId] = { red: 3, blue: 3 };
         purpleScansRemaining[sessionId] = { red: 3, blue: 3 };
+        s.teamPoints = { red: 100, blue: 100 };
+        s.timer = 180; // 3 minutes
+        s.interval = null;
 
         io.to(sessionId).emit('gameStarted', s);
 
+        // Emit initial points and modifiers
         io.to(sessionId).emit('pointsUpdate', {
             red: s.teamPoints.red,
             blue: s.teamPoints.blue,
             modifiers: teamShotModifiers[sessionId],
             purpleLeft: purpleScansRemaining[sessionId]
         });
+
+        // Start game timer
+        s.interval = setInterval(() => {
+            s.timer--;
+            io.to(sessionId).emit('timerUpdate', s.timer);
+
+            if (s.timer <= 0) {
+                clearInterval(s.interval);
+                let result;
+                if (s.teamPoints.red > s.teamPoints.blue) result = 'red';
+                else if (s.teamPoints.blue > s.teamPoints.red) result = 'blue';
+                else result = 'draw';
+
+                io.to(sessionId).emit('gameEnded', result);
+            }
+        }, 1000);
     });
+
 
     socket.on('teamHit', ({ sessionId, shooterTeam, victimTeam, scannedColor }) => {
         const s = sessions[sessionId];
@@ -119,7 +144,7 @@ io.on('connection', socket => {
                 teamShotModifiers[sessionId][shooterTeam]++;
             }
         } else if (scannedColor === victimTeam) {
-            s.teamPoints[shooterTeam] += 1;
+            s.teamPoints[shooterTeam] += 5;
             s.teamPoints[victimTeam] -= mod;
             if (s.teamPoints[victimTeam] < 0) s.teamPoints[victimTeam] = 0;
         }
@@ -130,7 +155,14 @@ io.on('connection', socket => {
             modifiers: teamShotModifiers[sessionId],
             purpleLeft: purpleScansRemaining[sessionId]
         });
+
+        // 🛑 Check for win condition
+        if (s.teamPoints[victimTeam] <= 0) {
+            clearInterval(s.interval);
+            io.to(sessionId).emit('gameEnded', shooterTeam); // Winning team
+        }
     });
+
 
     socket.on('disconnect', () => {
         for (const [sid, s] of Object.entries(sessions)) {
