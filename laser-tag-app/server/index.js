@@ -86,6 +86,13 @@ io.on('connection', socket => {
         purpleScansRemaining[sessionId] = { red: 3, blue: 3 };
 
         io.to(sessionId).emit('gameStarted', s);
+
+        io.to(sessionId).emit('pointsUpdate', {
+            red: s.teamPoints.red,
+            blue: s.teamPoints.blue,
+            modifiers: teamShotModifiers[sessionId],
+            purpleLeft: purpleScansRemaining[sessionId]
+        });
     });
 
     socket.on('teamHit', ({ sessionId, shooterTeam, victimTeam, scannedColor }) => {
