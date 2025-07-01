@@ -83,20 +83,53 @@ socket.on('lobbyUpdate', lobby => {
 
 socket.on('gameStarted', lobby => {
   updateLobby(lobby);
-  assignTeam(lobby);
-  switchScreen('lobby-screen', 'game-screen');
-  startWebcam();
+  const me = lobby.players.find(p => p.name === username);
+  const isSpectator = !me;
+
+  if (isSpectator) {
+    switchScreen('lobby-screen', 'spectator-screen');
+    updateSpectatorView(lobby);
+  } else {
+    assignTeam(lobby);
+    switchScreen('lobby-screen', 'game-screen');
+    startWebcam();
+  }
 });
+
 
 socket.on('pointsUpdate', ({ red, blue }) => {
   teamPoints = { red, blue };
   renderLeaderboard();
+  updateSpectatorView({ players: allPlayers });
   checkGameOver();
 });
+
 
 socket.on('errorMsg', msg => {
   alert(msg);
 });
+function updateSpectatorView(lobby) {
+  const redList = document.getElementById('red-team-list');
+  const blueList = document.getElementById('blue-team-list');
+  const redScore = document.getElementById('red-score');
+  const blueScore = document.getElementById('blue-score');
+
+  redList.innerHTML = '';
+  blueList.innerHTML = '';
+
+  lobby.players.forEach((p, i) => {
+    const li = document.createElement('li');
+    li.textContent = p.name;
+    if (i % 2 === 0) {
+      redList.appendChild(li);
+    } else {
+      blueList.appendChild(li);
+    }
+  });
+
+  redScore.textContent = teamPoints.red;
+  blueScore.textContent = teamPoints.blue;
+}
 
 function switchScreen(hideId, showId) {
   document.getElementById(hideId).classList.add('hidden');
