@@ -45,6 +45,8 @@
   <!-- GAME SCREEN -->
   <div class="screen hidden" id="game-screen">
     <h2>🎯 Laser Tag Arena</h2>
+    <p id="timer-display" style="font-size: 24px; font-weight: bold;">03:00</p>
+
     <p id="player-symbol"></p>
     <p id="player-points"></p>
     <video id="webcam" autoplay muted playsinline width="640" height="480"></video>
@@ -63,6 +65,7 @@
   <!-- SPECTATOR SCREEN -->
   <div class="screen hidden" id="spectator-screen">
     <h2>👁 Spectator View</h2>
+    <p id="timer-display" style="font-size: 24px; font-weight: bold;">03:00</p>
     <div style="display: flex; gap: 40px;">
       <div>
         <h3>🔴 RED TEAM (<span id="red-score">0</span> pts)</h3>
@@ -82,6 +85,10 @@
   </div>
 
 
+<!-- GAME END SCREEN -->
+<div class="screen hidden" id="end-screen">
+  <h1 id="end-message">Game Over</h1>
+</div>
 
 
 
