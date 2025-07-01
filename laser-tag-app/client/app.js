@@ -1,4 +1,4 @@
-// ✅ laser-tag-static/app.js
+// ✅ laser-tag-static/app.js (Finalised for Team Points, Sockets, Sync)
 const socket = io('https://group-8-bbd-production.up.railway.app', {
   transports: ['websocket']
 });
@@ -8,16 +8,13 @@ let sessionId = '';
 let isHost = false;
 let playerTeam = null;
 let teamPoints = { red: 100, blue: 100 };
-let allPlayers = [];
-let modifiers = { red: 3, blue: 3 };
-let purpleLeft = { red: 3, blue: 3 };
+let allPlayers = []; // [{ name, team }]
 
-// DOM elements
+// DOM
 const loginScreen = document.getElementById('login-screen');
 const chooseScreen = document.getElementById('choose-screen');
 const lobbyScreen = document.getElementById('lobby-screen');
 const gameScreen = document.getElementById('game-screen');
-const spectatorScreen = document.getElementById('spectator-screen');
 const videoElement = document.getElementById('webcam');
 const canvasElement = document.getElementById('overlay');
 const ctx = canvasElement.getContext('2d');
@@ -53,6 +50,7 @@ joinPlayerBtn.onclick = () => {
   if (sessionId) {
     socket.emit('joinSession', { username, sessionId, asSpectator: false });
   }
+  //switchScreen("choose-screen", "lobby-screen")
 };
 
 joinSpectatorBtn.onclick = () => {
@@ -60,6 +58,7 @@ joinSpectatorBtn.onclick = () => {
   if (sessionId) {
     socket.emit('joinSession', { username, sessionId, asSpectator: true });
   }
+  //switchScreen("choose-screen", "lobby-screen")
 };
 
 startGameBtn.onclick = () => {
@@ -80,7 +79,7 @@ socket.on('sessionCreated', ({ sessionId: id, lobby }) => {
 
 socket.on('lobbyUpdate', lobby => {
   updateLobby(lobby);
-  if (!gameScreen.classList.contains('hidden')) return;
+  if (!gameScreen.classList.contains('hidden')) return; // Already in game
   switchScreen('choose-screen', 'lobby-screen');
 });
 
@@ -99,23 +98,16 @@ socket.on('gameStarted', lobby => {
   }
 });
 
-socket.on('pointsUpdate', data => {
-  teamPoints = { red: data.red, blue: data.blue };
-  modifiers = data.modifiers;
-  purpleLeft = data.purpleLeft;
+
+socket.on('pointsUpdate', ({ red, blue, modifiers, purpleLeft }) => {
+  teamPoints = { red, blue };
+  updateUsageLog(modifiers, purpleLeft);
   renderLeaderboard();
   updateSpectatorView({ players: allPlayers });
   checkGameOver();
 });
 
-socket.on('timerUpdate', ({ minutes, seconds }) => {
-  document.getElementById('timer').textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-});
 
-socket.on('gameEnded', ({ winner }) => {
-  alert(`Game Over! Winner: ${winner === 'draw' ? 'It\'s a Draw!' : winner.toUpperCase()} Team`);
-  videoElement.pause();
-});
 
 socket.on('errorMsg', msg => {
   alert(msg);
@@ -137,7 +129,11 @@ function updateSpectatorView(lobby) {
   lobby.players.forEach((p, i) => {
     const li = document.createElement('li');
     li.textContent = p.name;
-    (i % 2 === 0 ? redList : blueList).appendChild(li);
+    if (i % 2 === 0) {
+      redList.appendChild(li);
+    } else {
+      blueList.appendChild(li);
+    }
   });
 
   redScore.textContent = teamPoints.red;
@@ -156,6 +152,8 @@ function updateLobby(lobby) {
   playersList.innerHTML = '';
   spectatorsList.innerHTML = '';
   allPlayers = lobby.players;
+
+  const teamCounts = { red: 0, blue: 0 };
 
   allPlayers.forEach((p, i) => {
     const li = document.createElement('li');
@@ -195,18 +193,33 @@ function assignTeam(lobby) {
 }
 
 function startWebcam() {
-  navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: 'environment' } } })
+  const constraints = {
+    video: {
+      facingMode: { exact: "environment" } // Tries to use the back camera
+    }
+  };
+
+  navigator.mediaDevices.getUserMedia(constraints)
     .then(stream => {
       videoElement.srcObject = stream;
       videoElement.play();
+      // detectColorLoop();
     })
-    .catch(() => {
-      navigator.mediaDevices.getUserMedia({ video: true })
-        .then(stream => {
-          videoElement.srcObject = stream;
-          videoElement.play();
-        })
-        .catch(() => alert('Camera access denied'));
+    .catch(err => {
+      console.warn('Could not use back camera. Falling back to default.', err);
+      fallbackToDefaultCamera();
+    });
+}
+
+function fallbackToDefaultCamera() {
+  navigator.mediaDevices.getUserMedia({ video: true })
+    .then(stream => {
+      videoElement.srcObject = stream;
+      videoElement.play();
+      // detectColorLoop();
+    })
+    .catch(err => {
+      alert('Camera access denied or not available');
     });
 }
 
@@ -215,29 +228,91 @@ function detectColor() {
   const frame = ctx.getImageData(0, 0, canvasElement.width, canvasElement.height);
   const data = frame.data;
 
-  const colorCounts = { red: 0, blue: 0, purple: 0, yellow: 0 };
+  let detectedColor = detectDominantColor(data);
 
-  for (let i = 0; i < data.length; i += 4) {
-    const [r, g, b] = [data[i], data[i + 1], data[i + 2]];
-    if (r > 180 && g < 100 && b < 100) colorCounts.red++;
-    else if (b > 150 && r < 100 && g < 100) colorCounts.blue++;
-    else if (r > 130 && b > 130 && g < 100) colorCounts.purple++;
-    else if (r > 200 && g > 200 && b < 100) colorCounts.yellow++;
-  }
+  if (detectedColor) {
+    socket.emit('teamHit', {
+      sessionId,
+      shooterTeam: playerTeam,
+      victimTeam: playerTeam === 'red' ? 'blue' : 'red',
+      scannedColor: detectedColor
+    });
 
-  const max = Object.entries(colorCounts).reduce((a, b) => b[1] > a[1] ? b : a);
-  const [detectedColor, count] = max;
-  if (count > 2000) {
-    socket.emit('teamHit', { sessionId, shooterTeam: playerTeam, victimTeam: playerTeam === 'red' ? 'blue' : 'red', scannedColor: detectedColor });
+    const toast = document.createElement('div');
+    toast.textContent = `🟡 Scanned: ${detectedColor.toUpperCase()}`;
+    toast.style.position = 'absolute';
+    toast.style.top = '10px';
+    toast.style.left = '50%';
+    toast.style.transform = 'translateX(-50%)';
+    toast.style.backgroundColor = '#333';
+    toast.style.color = '#fff';
+    toast.style.padding = '10px 20px';
+    toast.style.borderRadius = '6px';
+    toast.style.zIndex = '9999';
+    document.body.appendChild(toast);
+    setTimeout(() => document.body.removeChild(toast), 2000);
   }
 }
+function detectColorLoop() {
+  setInterval(detectColor, 700);
+}
+
+function detectDominantColor(data) {
+  let colorCounts = { red: 0, blue: 0, purple: 0, yellow: 0 };
+
+  for (let i = 0; i < data.length; i += 4) {
+    const r = data[i];
+    const g = data[i + 1];
+    const b = data[i + 2];
+
+    if (r > 180 && g < 100 && b < 100) colorCounts.red++;
+    else if (b > 150 && r < 100 && g < 100) colorCounts.blue++;
+    else if (r > 100 && b > 100 && g < 80) colorCounts.purple++;
+    else if (r > 200 && g > 200 && b < 100) colorCounts.yellow++; // 💡 new
+  }
+
+  let dominant = null;
+  let maxCount = 2000;
+
+  for (const color in colorCounts) {
+    if (colorCounts[color] > maxCount) {
+      dominant = color;
+      maxCount = colorCounts[color];
+    }
+  }
+
+  return dominant;
+}
+
 
 function renderLeaderboard() {
   const leaderboard = document.getElementById('leaderboard');
-  leaderboard.innerHTML = `<h3>Leaderboard</h3>
-    <div>🔴 RED TEAM: ${teamPoints.red} pts (MOD: ${modifiers.red}, PURPLE LEFT: ${purpleLeft.red})</div>
-    <div>🔵 BLUE TEAM: ${teamPoints.blue} pts (MOD: ${modifiers.blue}, PURPLE LEFT: ${purpleLeft.blue})</div>`;
+  leaderboard.innerHTML = '<h3>Leaderboard</h3>';
+  const red = document.createElement('div');
+  red.textContent = `🔴 RED TEAM: ${teamPoints.red} pts`;
+  const blue = document.createElement('div');
+  blue.textContent = `🔵 BLUE TEAM: ${teamPoints.blue} pts`;
+  leaderboard.appendChild(red);
+  leaderboard.appendChild(blue);
 }
+
+function updateUsageLog(modifiers = {}, purpleLeft = {}) {
+  const modLog = document.getElementById('modifiers-log');
+  const purpleLog = document.getElementById('purple-log');
+
+  modLog.innerHTML = `
+    <strong>🔥 Shot Damage Modifiers:</strong><br>
+    🔴 Red: ${modifiers?.red ?? '?'}<br>
+    🔵 Blue: ${modifiers?.blue ?? '?'}
+  `;
+
+  purpleLog.innerHTML = `
+    <strong>🍇 Purple Scans Left:</strong><br>
+    🔴 Red: ${purpleLeft?.red ?? '?'}<br>
+    🔵 Blue: ${purpleLeft?.blue ?? '?'}
+  `;
+}
+
 
 function checkGameOver() {
   if (teamPoints[playerTeam] <= 0) {

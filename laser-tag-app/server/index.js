@@ -29,7 +29,6 @@ const io = new Server(server, {
 const sessions = {}; // sessionId => { hostId, players, spectators, started, teamPoints }
 const teamShotModifiers = {}; // sessionId -> { red, blue }
 const purpleScansRemaining = {}; // sessionId -> { red, blue }
-const sessionTimers = {}; // sessionId => intervalId
 
 function makeCode() {
     return Math.floor(1000 + Math.random() * 9000).toString();
@@ -94,29 +93,6 @@ io.on('connection', socket => {
             modifiers: teamShotModifiers[sessionId],
             purpleLeft: purpleScansRemaining[sessionId]
         });
-
-        // ✅ Start 3-minute game timer
-        if (sessionTimers[sessionId]) clearInterval(sessionTimers[sessionId]);
-
-        const endTime = Date.now() + 3 * 60 * 1000;
-
-        sessionTimers[sessionId] = setInterval(() => {
-            const now = Date.now();
-            const remaining = Math.max(0, endTime - now);
-            const minutes = Math.floor(remaining / 60000);
-            const seconds = Math.floor((remaining % 60000) / 1000);
-
-            io.to(sessionId).emit('timerUpdate', { minutes, seconds });
-
-            if (remaining <= 0) {
-                clearInterval(sessionTimers[sessionId]);
-                delete sessionTimers[sessionId];
-
-                const { red, blue } = s.teamPoints;
-                let winner = red > blue ? 'red' : blue > red ? 'blue' : 'draw';
-                io.to(sessionId).emit('gameEnded', { winner });
-            }
-        }, 1000);
     });
 
     socket.on('teamHit', ({ sessionId, shooterTeam, victimTeam, scannedColor }) => {
@@ -146,13 +122,6 @@ io.on('connection', socket => {
             s.teamPoints[shooterTeam] += 1;
             s.teamPoints[victimTeam] -= mod;
             if (s.teamPoints[victimTeam] < 0) s.teamPoints[victimTeam] = 0;
-
-            // ✅ Check for team defeat
-            if (s.teamPoints[victimTeam] <= 0) {
-                clearInterval(sessionTimers[sessionId]);
-                delete sessionTimers[sessionId];
-                io.to(sessionId).emit('gameEnded', { winner: shooterTeam });
-            }
         }
 
         io.to(sessionId).emit('pointsUpdate', {
@@ -174,8 +143,6 @@ io.on('connection', socket => {
                 delete sessions[sid];
                 delete teamShotModifiers[sid];
                 delete purpleScansRemaining[sid];
-                clearInterval(sessionTimers[sid]);
-                delete sessionTimers[sid];
             } else {
                 io.to(sid).emit('lobbyUpdate', s);
             }
