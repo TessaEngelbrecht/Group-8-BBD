@@ -122,7 +122,9 @@ io.on('connection', socket => {
 
     socket.on('teamHit', ({ sessionId, shooterTeam, victimTeam, scannedColor }) => {
         const s = sessions[sessionId];
-        if (!s || !s.teamPoints || !s.teamPoints[shooterTeam] || !s.teamPoints[victimTeam]) return;
+
+        // Prevent hit processing if session or game isn't valid
+        if (!s || !s.started || !s.teamPoints || !s.teamPoints[shooterTeam] || !s.teamPoints[victimTeam]) return;
 
         if (!teamShotModifiers[sessionId]) {
             teamShotModifiers[sessionId] = { red: 3, blue: 3 };
@@ -156,12 +158,13 @@ io.on('connection', socket => {
             purpleLeft: purpleScansRemaining[sessionId]
         });
 
-        // 🛑 Check for win condition
-        if (s.teamPoints[victimTeam] <= 0) {
+        // 🛑 Only end game if it's running AND a team hits 0
+        if (s.started && s.teamPoints[victimTeam] <= 0) {
             clearInterval(s.interval);
             io.to(sessionId).emit('gameEnded', shooterTeam); // Winning team
         }
     });
+
 
 
     socket.on('disconnect', () => {
