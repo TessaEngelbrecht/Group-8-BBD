@@ -5,7 +5,6 @@ const cors = require('cors');
 
 const app = express();
 
-// ✅ List of allowed frontend origins (local + Vercel)
 const allowedOrigins = [
     'http://localhost:3000',
     'https://group-8-bbd.vercel.app',
@@ -26,14 +25,17 @@ const io = new Server(server, {
     }
 });
 
-// ✅ In-memory session storage
-const sessions = {}; // { sessionId: { hostId, players: [], spectators: [], started: false, teamPoints: { red: 100, blue: 100 } } }
+// ✅ In-memory session store
+const sessions = {}; // sessionId => { hostId, players, spectators, started, teamPoints }
+const teamShotModifiers = {}; // sessionId -> { red, blue }
+const purpleScansRemaining = {}; // sessionId -> { red, blue }
 
 function makeCode() {
     return Math.floor(1000 + Math.random() * 9000).toString();
 }
 
 io.on('connection', socket => {
+
     socket.on('createSession', ({ username }) => {
         const sessionId = makeCode();
         sessions[sessionId] = {
@@ -80,11 +82,11 @@ io.on('connection', socket => {
         if (socket.id !== s.hostId || s.players.length < 2 || s.players.length % 2 !== 0) return;
 
         s.started = true;
+        teamShotModifiers[sessionId] = { red: 3, blue: 3 };
+        purpleScansRemaining[sessionId] = { red: 3, blue: 3 };
+
         io.to(sessionId).emit('gameStarted', s);
     });
-
-    const teamShotModifiers = {}; // sessionId -> { red: 3, blue: 3 }
-    const purpleScansRemaining = {}; // sessionId -> { red: 3, blue: 3 }
 
     socket.on('teamHit', ({ sessionId, shooterTeam, victimTeam, scannedColor }) => {
         const s = sessions[sessionId];
@@ -93,6 +95,7 @@ io.on('connection', socket => {
         if (!teamShotModifiers[sessionId]) {
             teamShotModifiers[sessionId] = { red: 3, blue: 3 };
         }
+
         if (!purpleScansRemaining[sessionId]) {
             purpleScansRemaining[sessionId] = { red: 3, blue: 3 };
         }
@@ -114,14 +117,12 @@ io.on('connection', socket => {
             if (s.teamPoints[victimTeam] < 0) s.teamPoints[victimTeam] = 0;
         }
 
-        // Inside teamHit (after updating teamPoints)
         io.to(sessionId).emit('pointsUpdate', {
             red: s.teamPoints.red,
             blue: s.teamPoints.blue,
             modifiers: teamShotModifiers[sessionId],
             purpleLeft: purpleScansRemaining[sessionId]
         });
-
     });
 
     socket.on('disconnect', () => {
@@ -133,6 +134,8 @@ io.on('connection', socket => {
 
             if (s.players.length === 0 && s.spectators.length === 0) {
                 delete sessions[sid];
+                delete teamShotModifiers[sid];
+                delete purpleScansRemaining[sid];
             } else {
                 io.to(sid).emit('lobbyUpdate', s);
             }
@@ -140,6 +143,5 @@ io.on('connection', socket => {
     });
 });
 
-// ✅ Dynamic port
 const PORT = process.env.PORT || 4000;
 server.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
