@@ -54,8 +54,8 @@ io.on('connection', socket => {
             return socket.emit('errorMsg', '❌ Session does not exist.');
         }
 
-        if (s.started && !asSpectator) {
-            return socket.emit('errorMsg', '❌ Game has already started. You can only join as a spectator.');
+        if (s.started) {
+            return socket.emit('errorMsg', '❌ Game has already started. You cannot join at this stage.');
         }
 
         socket.join(sessionId);

@@ -50,7 +50,7 @@ joinPlayerBtn.onclick = () => {
   if (sessionId) {
     socket.emit('joinSession', { username, sessionId, asSpectator: false });
   }
-  switchScreen("choose-screen", "lobby-screen")
+  //switchScreen("choose-screen", "lobby-screen")
 };
 
 joinSpectatorBtn.onclick = () => {
@@ -58,7 +58,7 @@ joinSpectatorBtn.onclick = () => {
   if (sessionId) {
     socket.emit('joinSession', { username, sessionId, asSpectator: true });
   }
-  switchScreen("choose-screen", "lobby-screen")
+  //switchScreen("choose-screen", "lobby-screen")
 };
 
 startGameBtn.onclick = () => {
@@ -79,6 +79,8 @@ socket.on('sessionCreated', ({ sessionId: id, lobby }) => {
 
 socket.on('lobbyUpdate', lobby => {
   updateLobby(lobby);
+  if (!gameScreen.classList.contains('hidden')) return; // Already in game
+  switchScreen('choose-screen', 'lobby-screen');
 });
 
 socket.on('gameStarted', lobby => {
