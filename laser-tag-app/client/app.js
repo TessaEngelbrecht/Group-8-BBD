@@ -44,6 +44,9 @@ const copyGameIdBtn = document.getElementById('copy-game-id-btn');
 const shootBtn = document.getElementById('shoot-btn');
 
 shootBtn.onclick = () => {
+  if ('vibrate' in navigator) {
+    navigator.vibrate(200); // or [100, 50, 100] for a pattern
+  }
   detectColor();
 };
 
