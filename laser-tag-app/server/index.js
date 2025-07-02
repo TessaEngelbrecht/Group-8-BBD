@@ -89,7 +89,7 @@ io.on('connection', socket => {
         teamShotModifiers[sessionId] = { red: 3, blue: 3 };
         purpleScansRemaining[sessionId] = { red: 3, blue: 3 };
         s.teamPoints = { red: 100, blue: 100 };
-        s.timer = 90; // 2 minutes
+        s.timer = 60; // 2 minutes
         s.interval = null;
 
         io.to(sessionId).emit('gameStarted', s);
