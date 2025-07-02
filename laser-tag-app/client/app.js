@@ -66,7 +66,9 @@ continueBtn.onclick = () => {
   switchScreen('login-screen', 'choose-screen');
 };
 
-
+document.ondblclick = function (e) {
+  e.preventDefault();
+};
 createBtn.onclick = () => {
   socket.emit('createSession', { username });
 };
