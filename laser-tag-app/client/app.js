@@ -43,6 +43,17 @@ const startGameBtn = document.getElementById('start-game-btn');
 const copyGameIdBtn = document.getElementById('copy-game-id-btn');
 const shootBtn = document.getElementById('shoot-btn');
 
+const restartGameBtn = document.getElementById('refresh-game-btn');
+
+const restartGame = restartGameBtn.onclick=()=>{
+  setTimeout(()=>{
+    console.log("Game restarting in 10 seconds...");
+
+    window.location.reload();
+
+  }, 10000);
+}
+
 shootBtn.onclick = () => {
   //alert('vibrate' in navigator);
   // if ('vibrate' in navigator) {
@@ -186,6 +197,7 @@ socket.on('gameEnded', winner => {
 
   if (winner === 'draw') {
     winnerText.textContent = `🤝 It's a DRAW!`;
+    restartGame();
   } else if (isSpectator) {
     // Spectator: show which team won
     if (winner === 'red') winnerText.textContent = `🔴 RED TEAM WON!`;
@@ -193,8 +205,10 @@ socket.on('gameEnded', winner => {
   } else if (playerTeam === winner) {
     winnerText.textContent = `🏆 Your Team (${winner.toUpperCase()}) WON!`;
     launchConfetti();
+    restartGame();
   } else {
     winnerText.textContent = `💀 Your Team LOST...`;
+    restartGame();
   }
 });
 
