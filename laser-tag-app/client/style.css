@@ -691,6 +691,10 @@ input[type="text"]:focus {
   box-shadow: 0 0 1.2em var(--neon-green);
 }
 /* SPECTATOR SCREEN - Single Screen Layout */
+
+
+
+/* SPECTATOR SCREEN - Responsive Layout */
 #spectator-screen {
   padding: 0;
   height: 100vh;
@@ -722,7 +726,7 @@ input[type="text"]:focus {
   text-shadow: 0 0 0.6rem currentColor;
 }
 
-/* Main Content Area - Flexible Layout */
+/* Main Content Area */
 .spectator-main {
   flex: 1;
   display: flex;
@@ -744,7 +748,7 @@ input[type="text"]:focus {
   padding: 1.5vh 2vw;
   gap: 2vw;
   height: auto;
-  min-height: 20vh;
+  min-height: 15vh;
 }
 
 .team-stats {
@@ -754,7 +758,7 @@ input[type="text"]:focus {
   padding: 1vh 1vw;
   display: flex;
   flex-direction: column;
-  min-width: 0; /* Prevents flex overflow */
+  min-width: 0;
 }
 
 .team-stats h3 {
@@ -784,14 +788,13 @@ input[type="text"]:focus {
   text-shadow: 0 0 0.5rem currentColor;
 }
 
-/* Player Lists - Scrollable if needed */
 .team-stats ul {
   flex: 1;
   list-style: none;
   padding: 0;
   margin: 0;
   overflow-y: auto;
-  max-height: 12vh;
+  max-height: 8vh;
 }
 
 .team-stats li {
@@ -814,6 +817,11 @@ input[type="text"]:focus {
   transform: scale(1.02);
 }
 
+.team-stats li.selected {
+  background: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 0 0.5rem currentColor;
+}
+
 .battle-divider {
   font-size: clamp(1.5rem, 4vw, 2.2rem);
   color: var(--neon-yellow);
@@ -823,13 +831,85 @@ input[type="text"]:focus {
   white-space: nowrap;
 }
 
-/* Camera Feed Area */
+/* DESKTOP: Multi-Camera Grid */
+.spectator-cameras-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1vh;
+  min-height: 0;
+  padding: 0.5vh 0;
+}
+
+.player-camera-block {
+  background: rgba(10, 10, 16, 0.9);
+  border-radius: 0.8rem;
+  padding: 1vh;
+  border: 0.1rem solid var(--neon-blue);
+  box-shadow: 0 0 0.8rem rgba(0, 255, 255, 0.2);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.player-camera-block.red-team {
+  border-color: var(--neon-red);
+  box-shadow: 0 0 0.8rem rgba(255, 0, 64, 0.2);
+}
+
+.player-camera-block.blue-team {
+  border-color: var(--neon-blue);
+  box-shadow: 0 0 0.8rem rgba(0, 255, 255, 0.2);
+}
+
+.player-camera-header {
+  text-align: center;
+  margin-bottom: 0.5vh;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-shadow: 0 0 0.5rem currentColor;
+}
+
+.player-camera-header.red-team {
+  color: var(--neon-red);
+}
+
+.player-camera-header.blue-team {
+  color: var(--neon-blue);
+}
+
+.player-camera-video {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  min-height: 150px;
+  object-fit: cover;
+  border-radius: 0.5rem;
+  background: rgba(0, 0, 0, 0.5);
+  border: 0.05rem solid currentColor;
+}
+
+.player-camera-placeholder {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 0.5rem;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  text-align: center;
+  min-height: 150px;
+  border: 0.05rem dashed currentColor;
+}
+
+/* MOBILE: Single Camera View */
 .spectator-camera-section {
   flex: 1;
   display: flex;
   flex-direction: column;
   gap: 1vh;
-  min-height: 0; /* Important for flex shrinking */
+  min-height: 0;
 }
 
 .spectator-camera-label {
@@ -851,7 +931,7 @@ input[type="text"]:focus {
   background: rgba(0, 0, 0, 0.5);
 }
 
-/* Stats Section - Bottom */
+/* Stats Section */
 .spectator-stats {
   flex-shrink: 0;
   display: flex;
@@ -881,8 +961,37 @@ input[type="text"]:focus {
   color: var(--neon-red);
 }
 
-/* Mobile Optimizations */
-@media (max-width: 48rem) {
+/* RESPONSIVE BREAKPOINTS */
+
+/* Desktop: Show multi-camera grid */
+@media (min-width: 768px) {
+  .spectator-cameras-grid {
+    display: grid;
+  }
+  
+  .spectator-camera-section {
+    display: none;
+  }
+  
+  .team-stats li {
+    cursor: default;
+  }
+  
+  .team-stats li:hover {
+    transform: none;
+  }
+}
+
+/* Mobile: Show single camera view */
+@media (max-width: 767px) {
+  .spectator-cameras-grid {
+    display: none;
+  }
+  
+  .spectator-camera-section {
+    display: flex;
+  }
+  
   .battle-overview {
     flex-direction: column;
     gap: 1vh;
@@ -932,21 +1041,5 @@ input[type="text"]:focus {
   .spectator-stats > div {
     font-size: 0.6rem;
     padding: 0.5vh 0.5vw;
-  }
-}
-
-/* Landscape Mobile */
-@media (max-width: 48rem) and (orientation: landscape) {
-  .battle-overview {
-    flex-direction: row;
-    min-height: 15vh;
-  }
-  
-  .spectator-camera-section {
-    flex: 2;
-  }
-  
-  #spectator-camera-feed {
-    max-height: 20vh;
   }
 }

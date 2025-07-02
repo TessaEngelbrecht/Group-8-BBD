@@ -145,45 +145,52 @@
     </div>
   </div>
 
-  <!-- SPECTATOR SCREEN -->
-  <div class="screen hidden" id="spectator-screen">
-    <div class="spectator-header">
-      <h2 class="neon-text">👁 OBSERVER MODE</h2>
-      <div id="game-timer-spectator" class="timer">⏱️ 2:00</div>
-    </div>
-  
-    <div class="spectator-main">
-      <div class="battle-overview">
-        <div class="team-stats red-stats">
-          <h3>🔴 RED SQUAD</h3>
-          <div class="team-score" id="red-score">100</div>
-          <ul id="red-team-list"></ul>
-        </div>
-  
-        <div class="battle-divider">⚡ VS ⚡</div>
-  
-        <div class="team-stats blue-stats">
-          <h3>🔵 BLUE SQUAD</h3>
-          <div class="team-score" id="blue-score">100</div>
-          <ul id="blue-team-list"></ul>
-        </div>
-      </div>
-  
-      <div class="spectator-camera-section">
-        <div class="spectator-camera-label" id="spectator-camera-label">
-          Click a player to watch their feed
-        </div>
-        <video id="spectator-camera-feed" autoplay playsinline controls style="display:none;"></video>
-      </div>
-  
-      <div class="spectator-stats">
-        <div class="modifiers-log"></div>
-        <div class="purple-log"></div>
-      </div>
-    </div>
-  
-    <div class="scan-lines"></div>
+<!-- SPECTATOR SCREEN -->
+<div class="screen hidden" id="spectator-screen">
+  <div class="spectator-header">
+    <h2 class="neon-text">👁 OBSERVER MODE</h2>
+    <div id="game-timer-spectator" class="timer">⏱️ 2:00</div>
   </div>
+
+  <div class="spectator-main">
+    <div class="battle-overview">
+      <div class="team-stats red-stats">
+        <h3>🔴 RED SQUAD</h3>
+        <div class="team-score" id="red-score">100</div>
+        <ul id="red-team-list"></ul>
+      </div>
+
+      <div class="battle-divider">⚡ VS ⚡</div>
+
+      <div class="team-stats blue-stats">
+        <h3>🔵 BLUE SQUAD</h3>
+        <div class="team-score" id="blue-score">100</div>
+        <ul id="blue-team-list"></ul>
+      </div>
+    </div>
+
+    <!-- DESKTOP: Multi-camera grid -->
+    <div class="spectator-cameras-grid" id="spectator-cameras-grid">
+      <!-- Player camera blocks will be dynamically added here -->
+    </div>
+
+    <!-- MOBILE: Single camera view -->
+    <div class="spectator-camera-section">
+      <div class="spectator-camera-label" id="spectator-camera-label">
+        Click a player to watch their feed
+      </div>
+      <video id="spectator-camera-feed" autoplay playsinline controls style="display:none;"></video>
+    </div>
+
+    <div class="spectator-stats">
+      <div class="modifiers-log"></div>
+      <div class="purple-log"></div>
+    </div>
+  </div>
+
+  <div class="scan-lines"></div>
+</div>
+
 
 
   <!-- GAME OVER OVERLAY -->
