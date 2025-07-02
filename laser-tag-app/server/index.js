@@ -192,6 +192,23 @@ io.on('connection', socket => {
             }
         }
     });
+
+    // Spectator requests to watch a player's camera
+    socket.on('spectator-watch-player', ({ sessionId, playerId }) => {
+        // Forward this to the player so they can start WebRTC signaling
+        io.to(playerId).emit('spectator-watch-request', { spectatorId: socket.id });
+    });
+
+    // WebRTC offer/answer/candidate signaling
+    socket.on('webrtc-offer', ({ to, offer }) => {
+        io.to(to).emit('webrtc-offer', { from: socket.id, offer });
+    });
+    socket.on('webrtc-answer', ({ to, answer }) => {
+        io.to(to).emit('webrtc-answer', { from: socket.id, answer });
+    });
+    socket.on('webrtc-ice-candidate', ({ to, candidate }) => {
+        io.to(to).emit('webrtc-ice-candidate', { from: socket.id, candidate });
+    });
 });
 
 const PORT = process.env.PORT || 4000;
