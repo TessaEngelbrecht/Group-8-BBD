@@ -6,8 +6,8 @@ const socket = io('https://group-8-bbd-production.up.railway.app', {
 let username = '';
 let sessionId = '';
 let isHost = false;
-let playerTeam = null;
-let teamPoints = { red: 100, blue: 100 };
+//let playerTeam = null;
+//et teamPoints = { red: 100, blue: 100 };
 let allPlayers = []; // [{ name, team }]
 
 // DOM
@@ -15,9 +15,23 @@ const loginScreen = document.getElementById('login-screen');
 const chooseScreen = document.getElementById('choose-screen');
 const lobbyScreen = document.getElementById('lobby-screen');
 const gameScreen = document.getElementById('game-screen');
-const videoElement = document.getElementById('webcam');
+//const videoElement = document.getElementById('webcam');
 const canvasElement = document.getElementById('overlay');
 const ctx = canvasElement.getContext('2d');
+
+const timerDisplay = document.getElementById('game-timer');
+//const gameOverOverlay = document.getElementById('game-over-overlay');
+//const winnerText = document.getElementById('winner-text');
+
+
+
+const timerPlayer = document.getElementById('game-timer-player');
+const timerSpectator = document.getElementById('game-timer-spectator');
+const gameOverOverlay = document.getElementById('game-over-overlay');
+const winnerText = document.getElementById('winner-text');
+const videoElement = document.getElementById('webcam');
+let playerTeam = null;
+let teamPoints = { red: 100, blue: 100 };
 
 // Buttons
 const continueBtn = document.getElementById('continue-btn');
@@ -107,6 +121,41 @@ socket.on('pointsUpdate', ({ red, blue, modifiers, purpleLeft }) => {
   checkGameOver();
 });
 
+socket.on('timerUpdate', seconds => {
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  const formatted = `⏱️ ${mins}:${secs.toString().padStart(2, '0')}`;
+
+  if (timerPlayer) timerPlayer.textContent = formatted;
+  if (timerSpectator) timerSpectator.textContent = formatted;
+});
+
+
+// Game Ended: show overlay for all, with correct winner text
+socket.on('gameEnded', winner => {
+  if (videoElement && typeof videoElement.pause === 'function') videoElement.pause();
+  document.querySelectorAll('.screen').forEach(el => el.classList.add('hidden'));
+  gameOverOverlay.classList.remove('hidden');
+
+  // Determine if this client is a spectator
+  const isSpectator = !playerTeam;
+
+  if (winner === 'draw') {
+    winnerText.textContent = `🤝 It's a DRAW!`;
+  } else if (isSpectator) {
+    // Spectator: show which team won
+    if (winner === 'red') winnerText.textContent = `🔴 RED TEAM WON!`;
+    else if (winner === 'blue') winnerText.textContent = `🔵 BLUE TEAM WON!`;
+  } else if (playerTeam === winner) {
+    winnerText.textContent = `🏆 Your Team (${winner.toUpperCase()}) WON!`;
+    launchConfetti();
+  } else {
+    winnerText.textContent = `💀 Your Team LOST...`;
+  }
+});
+
+
+
 
 
 socket.on('errorMsg', msg => {
@@ -138,6 +187,23 @@ function updateSpectatorView(lobby) {
 
   redScore.textContent = teamPoints.red;
   blueScore.textContent = teamPoints.blue;
+}
+
+
+function launchConfetti() {
+  const canvas = document.getElementById('confetti-canvas');
+  canvas.classList.remove('hidden');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  const myConfetti = confetti.create(canvas, { resize: true, useWorker: true });
+  myConfetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
+  myConfetti({ particleCount: 60, spread: 120, startVelocity: 40, origin: { y: 0.7 } });
+  myConfetti({ particleCount: 40, spread: 90, startVelocity: 60, origin: { y: 0.8 } });
+  setTimeout(() => {
+    canvas.classList.add('hidden');
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }, 2000);
 }
 
 function switchScreen(hideId, showId) {
@@ -183,6 +249,30 @@ function updateLobby(lobby) {
 
   renderLeaderboard();
 }
+
+// Helper to hide all screens except overlay
+function showGameOverOverlay(winner) {
+  // Hide all screens
+  document.querySelectorAll('.screen').forEach(el => el.classList.add('hidden'));
+  // Show overlay
+  gameOverOverlay.classList.remove('hidden');
+
+  // Set winner text and effects
+  if (winner === 'draw') {
+    winnerText.innerHTML = `🤝 <span style="color:#f39c12;">It's a DRAW!</span>`;
+    gameOverOverlay.style.background = 'radial-gradient(circle, #333 60%, #f39c12 100%)';
+  } else if (playerTeam === winner) {
+    winnerText.innerHTML = `🏆 <span style="color:#4a90e2;text-shadow:0 0 20px #4a90e2;">Your Team (${winner.toUpperCase()}) WON!</span>`;
+    gameOverOverlay.style.background = 'radial-gradient(circle, #4a90e2 60%, #fff 100%)';
+    launchConfetti();
+  } else {
+    winnerText.innerHTML = `💀 <span style="color:#e74c3c;text-shadow:0 0 20px #e74c3c;">Your Team LOST...</span>`;
+    gameOverOverlay.style.background = 'radial-gradient(circle, #222 60%, #e74c3c 100%)';
+  }
+  // Animate overlay
+  gameOverOverlay.style.animation = 'popIn 0.8s cubic-bezier(0.23, 1, 0.32, 1)';
+}
+
 
 function assignTeam(lobby) {
   const index = lobby.players.findIndex(p => p.name === username);
@@ -317,10 +407,11 @@ function updateUsageLog(modifiers = {}, purpleLeft = {}) {
   }
 }
 
-
 function checkGameOver() {
-  if (teamPoints[playerTeam] <= 0) {
-    alert('💀 Your team is out of points. Game Over!');
+  // This is only a client-side check for display; the server is authoritative
+  if (playerTeam && teamPoints[playerTeam] <= 0) {
     videoElement.pause();
+    gameOverOverlay.classList.remove('hidden');
+    winnerText.textContent = `💀 Your Team LOST...`;
   }
 }

@@ -248,3 +248,57 @@ button:disabled {
 
 
 
+.hidden {
+  display: none;
+}
+
+.screen {
+  padding: 20px;
+}
+
+#game-over-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0,0,0,0.85);
+  color: white;
+  text-align: center;
+  padding-top: 200px;
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  /* Remove display: none here */
+}
+
+#game-over-overlay.hidden {
+  display: none;
+}
+
+#game-over-overlay {
+  animation: popIn 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+@keyframes popIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.8) translateY(40px);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.05) translateY(-10px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+#game-over-overlay {
+  text-shadow: 0 0 20px #fff, 0 0 40px var(--primary-color), 0 0 60px var(--secondary-color);
+  box-shadow: 0 0 40px 10px var(--primary-color);
+  border-radius: 20px;
+}

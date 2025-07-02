@@ -46,6 +46,8 @@
   <div class="screen hidden" id="game-screen">
     <h2>🎯 Laser Tag Arena</h2>
     <p id="player-symbol"></p>
+    <p id="game-timer-player">⏱️ 1:00</p>
+    <p id="player-symbol"></p>
     <p id="player-points"></p>
     <video id="webcam" autoplay muted playsinline width="640" height="480"></video>
     <canvas hidden id="overlay" width="640" height="480"></canvas>
@@ -56,13 +58,13 @@
       <div class="modifiers-log"></div>
       <div class="purple-log"></div>
     </div>
-
+    <div id="leaderboard"></div>
   </div>
-  <div hidden id="leaderboard"></div>
 
   <!-- SPECTATOR SCREEN -->
   <div class="screen hidden" id="spectator-screen">
     <h2>👁 Spectator View</h2>
+    <p id="game-timer-spectator">⏱️ 1:00</p>
     <div style="display: flex; gap: 40px;">
       <div>
         <h3>🔴 RED TEAM (<span id="red-score">0</span> pts)</h3>
@@ -78,16 +80,23 @@
       <div class="modifiers-log"></div>
       <div class="purple-log"></div>
     </div>
-
+    <div id="leaderboard"></div>
   </div>
 
+  <!-- GAME OVER OVERLAY -->
+  <div id="game-over-overlay" class="hidden">
+    <h1 id="winner-text">🏆 GAME OVER</h1>
+    <p>Refresh to play again.</p>
+  </div>
 
-
-
+  <canvas id="confetti-canvas" class="hidden"
+    style="position:fixed;top:0;left:0;width:100vw;height:100vh;pointer-events:none;z-index:1000;"></canvas>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 
 
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.15.0/dist/tf.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
   <script src="app.js"></script>
 </body>
+
 </html>
