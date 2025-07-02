@@ -218,32 +218,41 @@ function switchScreen(hideId, showId) {
 
 function updateLobby(lobby) {
   document.getElementById('game-id-display').textContent = sessionId;
-  const playersList = document.getElementById('players-list');
+  const redPlayers = document.getElementById('red-players');
+  const bluePlayers = document.getElementById('blue-players');
   const spectatorsList = document.getElementById('spectators-list');
-  playersList.innerHTML = '';
+
+  redPlayers.innerHTML = '';
+  bluePlayers.innerHTML = '';
   spectatorsList.innerHTML = '';
   allPlayers = lobby.players;
 
-  const teamCounts = { red: 0, blue: 0 };
-
   allPlayers.forEach((p, i) => {
     const li = document.createElement('li');
-    const team = i % 2 === 0 ? 'red' : 'blue';
-    li.textContent = `${p.name} (${team})`;
-    playersList.appendChild(li);
+    li.textContent = p.name;
+    li.className = 'player-item';
+
+    if (i % 2 === 0) {
+      li.classList.add('red-player');
+      redPlayers.appendChild(li);
+    } else {
+      li.classList.add('blue-player');
+      bluePlayers.appendChild(li);
+    }
   });
 
   lobby.spectators.forEach(s => {
     const li = document.createElement('li');
     li.textContent = s.name;
+    li.className = 'spectator-item';
     spectatorsList.appendChild(li);
   });
 
   const statusText = lobby.started
-    ? 'Game Started!'
+    ? 'Mission Active!'
     : lobby.players.length < 2 || lobby.players.length % 2 !== 0
-      ? 'Waiting for even number of players (minimum 2)...'
-      : 'Ready to start!';
+      ? 'Awaiting warriors (minimum 2, even numbers)...'
+      : 'Ready for deployment!';
   document.getElementById('game-status').textContent = statusText;
 
   if (isHost && !lobby.started && lobby.players.length >= 2 && lobby.players.length % 2 === 0) {
@@ -277,20 +286,33 @@ function showGameOverOverlay(winner) {
   // Animate overlay
   gameOverOverlay.style.animation = 'popIn 0.8s cubic-bezier(0.23, 1, 0.32, 1)';
 }
+function setTeamAmbient(team) {
+  const ambient = document.getElementById('team-ambient');
+  ambient.classList.remove('hidden', 'red-ambient', 'blue-ambient');
+  if (team) {
+    ambient.classList.add(`${team}-ambient`);
+  }
+}
 
 
 function assignTeam(lobby) {
   const index = lobby.players.findIndex(p => p.name === username);
   if (index !== -1) {
     playerTeam = index % 2 === 0 ? 'red' : 'blue';
-    document.getElementById('player-symbol').textContent = `You are on team: ${playerTeam.toUpperCase()}`;
+    const indicator = document.getElementById('player-symbol');
+    indicator.textContent = `TEAM ${playerTeam.toUpperCase()}`;
+    indicator.className = `team-indicator ${playerTeam}`;
+
+    // Set ambient lighting
+    setTeamAmbient(playerTeam);
   }
 }
 
+// Fix Canvas2D performance warning
 function startWebcam() {
   const constraints = {
     video: {
-      facingMode: { exact: "environment" } // Tries to use the back camera
+      facingMode: { exact: "environment" }
     }
   };
 
@@ -298,7 +320,14 @@ function startWebcam() {
     .then(stream => {
       videoElement.srcObject = stream;
       videoElement.play();
-      // detectColorLoop();
+
+      // Fix: Set willReadFrequently when getting canvas context
+      canvasElement.width = videoElement.videoWidth || 640;
+      canvasElement.height = videoElement.videoHeight || 480;
+
+      // This fixes the Canvas2D warning
+      const context = canvasElement.getContext('2d', { willReadFrequently: true });
+
     })
     .catch(err => {
       console.warn('Could not use back camera. Falling back to default.', err);
@@ -311,24 +340,34 @@ function fallbackToDefaultCamera() {
     .then(stream => {
       videoElement.srcObject = stream;
       videoElement.play();
-      // detectColorLoop();
+
+      // Fix: Set willReadFrequently here too
+      canvasElement.width = videoElement.videoWidth || 640;
+      canvasElement.height = videoElement.videoHeight || 480;
+
+      // This fixes the Canvas2D warning
+      const context = canvasElement.getContext('2d', { willReadFrequently: true });
+
     })
     .catch(err => {
       alert('Camera access denied or not available');
     });
 }
 
+// Update detectColor function to use the context with willReadFrequently
 function detectColor() {
-  ctx.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
-  const frame = ctx.getImageData(0, 0, canvasElement.width, canvasElement.height);
+  // Get context with willReadFrequently if not already set
+  const context = canvasElement.getContext('2d', { willReadFrequently: true });
+
+  context.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
+  const frame = context.getImageData(0, 0, canvasElement.width, canvasElement.height);
   const data = frame.data;
 
   let detectedColor = detectDominantColor(data);
 
   if (detectedColor) {
-    // Vibrate the device for 200ms if supported
     if (navigator.vibrate) {
-      navigator.vibrate([100, 50, 100]); // You can adjust the duration or use a pattern
+      navigator.vibrate([100, 50, 100]);
     }
     socket.emit('teamHit', {
       sessionId,
@@ -338,18 +377,32 @@ function detectColor() {
     });
 
     const toast = document.createElement('div');
-    toast.textContent = `🟡 Scanned: ${detectedColor.toUpperCase()}`;
-    toast.style.position = 'absolute';
-    toast.style.top = '10px';
-    toast.style.left = '50%';
-    toast.style.transform = 'translateX(-50%)';
-    toast.style.backgroundColor = '#333';
-    toast.style.color = '#fff';
-    toast.style.padding = '10px 20px';
-    toast.style.borderRadius = '6px';
-    toast.style.zIndex = '9999';
+    toast.textContent = `🎯 Scanned: ${detectedColor.toUpperCase()}`;
+    toast.className = 'scan-toast';
+    toast.style.cssText = `
+      position: fixed;
+      top: 70px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.9);
+      color: var(--neon-yellow);
+      padding: 8px 16px;
+      border-radius: 20px;
+      border: 1px solid var(--neon-yellow);
+      z-index: 9999;
+      font-family: 'Orbitron', monospace;
+      font-weight: 700;
+      font-size: 0.9rem;
+      text-shadow: 0 0 10px currentColor;
+      animation: scanToast 2s ease-out forwards;
+    `;
+
     document.body.appendChild(toast);
-    setTimeout(() => document.body.removeChild(toast), 2000);
+    setTimeout(() => {
+      if (document.body.contains(toast)) {
+        document.body.removeChild(toast);
+      }
+    }, 2000);
   }
 }
 
@@ -387,14 +440,18 @@ function detectDominantColor(data) {
 
 function renderLeaderboard() {
   const leaderboard = document.getElementById('leaderboard');
-  leaderboard.innerHTML = '<h3>Leaderboard</h3>';
-  const red = document.createElement('div');
-  red.textContent = `🔴 RED TEAM: ${teamPoints.red} pts`;
-  const blue = document.createElement('div');
-  blue.textContent = `🔵 BLUE TEAM: ${teamPoints.blue} pts`;
-  leaderboard.appendChild(red);
-  leaderboard.appendChild(blue);
+  leaderboard.innerHTML = `
+    <div class="score-item red-score">
+      <div class="team-label">🔴 RED</div>
+      <div class="score-value">${teamPoints.red}</div>
+    </div>
+    <div class="score-item blue-score">
+      <div class="team-label">🔵 BLUE</div>
+      <div class="score-value">${teamPoints.blue}</div>
+    </div>
+  `;
 }
+
 
 function updateUsageLog(modifiers = {}, purpleLeft = {}) {
   const modLogs = document.getElementsByClassName('modifiers-log');
