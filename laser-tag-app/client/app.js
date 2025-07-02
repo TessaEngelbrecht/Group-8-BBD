@@ -88,6 +88,45 @@ copyGameIdBtn.onclick = () => {
   navigator.clipboard.writeText(sessionId);
   alert('Game code copied!');
 };
+// Keep track of outgoing peer connections by spectator socket id
+const outgoingPeerConnections = {};
+
+// When a spectator wants to watch this player's camera
+socket.on('spectator-watch-request', async ({ spectatorId }) => {
+  // Create a new RTCPeerConnection
+  const pc = new RTCPeerConnection();
+  outgoingPeerConnections[spectatorId] = pc;
+
+  // Add local camera stream tracks
+  const stream = videoElement.srcObject;
+  stream.getTracks().forEach(track => pc.addTrack(track, stream));
+
+  // ICE candidates
+  pc.onicecandidate = event => {
+    if (event.candidate) {
+      socket.emit('webrtc-ice-candidate', { to: spectatorId, candidate: event.candidate });
+    }
+  };
+
+  // Create and send offer
+  const offer = await pc.createOffer();
+  await pc.setLocalDescription(offer);
+  socket.emit('webrtc-offer', { to: spectatorId, offer });
+
+  // Listen for answer
+  socket.on('webrtc-answer', async ({ from, answer }) => {
+    if (from === spectatorId) {
+      await pc.setRemoteDescription(new RTCSessionDescription(answer));
+    }
+  });
+
+  // Listen for ICE candidates from spectator
+  socket.on('webrtc-ice-candidate', ({ from, candidate }) => {
+    if (from === spectatorId && candidate) {
+      pc.addIceCandidate(new RTCIceCandidate(candidate));
+    }
+  });
+});
 
 socket.on('sessionCreated', ({ sessionId: id, lobby }) => {
   isHost = true;
@@ -183,6 +222,8 @@ function updateSpectatorView(lobby) {
   lobby.players.forEach((p, i) => {
     const li = document.createElement('li');
     li.textContent = p.name;
+    li.style.cursor = 'pointer';
+    li.onclick = () => selectPlayerCamera(p.id, p.name);
     if (i % 2 === 0) {
       redList.appendChild(li);
     } else {
@@ -193,6 +234,53 @@ function updateSpectatorView(lobby) {
   redScore.textContent = teamPoints.red;
   blueScore.textContent = teamPoints.blue;
 }
+let spectatorPeerConnection = null;
+
+function selectPlayerCamera(playerId, playerName) {
+  // Clean up any previous connection
+  if (spectatorPeerConnection) {
+    spectatorPeerConnection.close();
+    spectatorPeerConnection = null;
+  }
+  document.getElementById('spectator-camera-feed').style.display = 'block';
+  document.getElementById('spectator-camera-label').textContent = `Watching: ${playerName}`;
+
+  // Ask the server to start the WebRTC connection with the selected player
+  socket.emit('spectator-watch-player', { sessionId, playerId });
+
+  // Set up WebRTC as receiver
+  spectatorPeerConnection = new RTCPeerConnection();
+
+  // Show incoming video
+  spectatorPeerConnection.ontrack = event => {
+    document.getElementById('spectator-camera-feed').srcObject = event.streams[0];
+  };
+
+  // ICE candidates
+  spectatorPeerConnection.onicecandidate = event => {
+    if (event.candidate) {
+      socket.emit('webrtc-ice-candidate', { to: playerId, candidate: event.candidate });
+    }
+  };
+
+  // Listen for offer from player
+  socket.on('webrtc-offer', async ({ from, offer }) => {
+    if (from === playerId) {
+      await spectatorPeerConnection.setRemoteDescription(new RTCSessionDescription(offer));
+      const answer = await spectatorPeerConnection.createAnswer();
+      await spectatorPeerConnection.setLocalDescription(answer);
+      socket.emit('webrtc-answer', { to: playerId, answer });
+    }
+  });
+
+  // Listen for ICE candidates from player
+  socket.on('webrtc-ice-candidate', ({ from, candidate }) => {
+    if (from === playerId && candidate) {
+      spectatorPeerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+    }
+  });
+}
+
 
 
 function launchConfetti() {
