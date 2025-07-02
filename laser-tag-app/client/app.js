@@ -63,6 +63,16 @@ continueBtn.onclick = () => {
 createBtn.onclick = () => {
   socket.emit('createSession', { username });
 };
+document.addEventListener('DOMContentLoaded', function () {
+  const container = document.getElementById('video-zoom-container');
+  if (window.PinchZoom) {
+    new PinchZoom(container, {
+      minZoom: 1,
+      maxZoom: 4,
+      draggableUnzoomed: false
+    });
+  }
+});
 
 joinPlayerBtn.onclick = () => {
   sessionId = joinCodeInput.value.trim();

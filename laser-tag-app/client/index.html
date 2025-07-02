@@ -8,6 +8,8 @@
   <link rel="stylesheet" href="style.css">
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
   <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <script src="https://unpkg.com/pinch-zoom-js@2.0.0/dist/pinch-zoom.umd.js"></script>
+
 </head>
 
 <body>
@@ -114,7 +116,9 @@
     <!-- Main Game Area -->
     <div class="game-main">
       <div class="camera-container">
-        <video id="webcam" autoplay muted playsinline></video>
+        <div id="video-zoom-container" style="width:100%;height:100%;">
+          <video id="webcam" autoplay muted playsinline></video>
+        </div>
         <canvas hidden id="overlay"></canvas>
         <div class="targeting-overlay">
           <div class="crosshair"></div>
