@@ -26,23 +26,37 @@ body {
   min-height: 100vh;
 }
 
-/* EFFECT 1: Animated Particle Background */
 #particles-bg {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  background:
-    radial-gradient(0.2rem 0.2rem at 20% 30%, var(--neon-blue), transparent),
-    radial-gradient(0.2rem 0.2rem at 40% 70%, var(--neon-red), transparent),
-    radial-gradient(0.1rem 0.1rem at 90% 40%, var(--neon-green), transparent),
-    radial-gradient(0.1rem 0.1rem at 60% 90%, var(--neon-purple), transparent);
-  background-size: 12rem 12rem, 18rem 18rem, 9rem 9rem, 15rem 15rem;
-  animation: particleFloat 20s infinite linear;
+  width: 100vw;
+  height: 100vh;
   z-index: -2;
-  opacity: 0.3;
+  /* More, bigger, and brighter particles! */
+  background:
+    radial-gradient(circle at 15% 25%, rgba(0,255,255,0.55) 0.8vw, transparent 1.6vw),
+    radial-gradient(circle at 40% 70%, rgba(255,0,64,0.45) 1vw, transparent 2vw),
+    radial-gradient(circle at 80% 50%, rgba(0,255,255,0.60) 0.7vw, transparent 1.3vw),
+    radial-gradient(circle at 60% 90%, rgba(255,0,255,0.50) 0.7vw, transparent 1.3vw),
+    radial-gradient(circle at 75% 15%, rgba(255,255,0,0.50) 1vw, transparent 2vw),
+    radial-gradient(circle at 30% 80%, rgba(0,255,0,0.40) 0.8vw, transparent 1.6vw),
+    radial-gradient(circle at 55% 40%, rgba(0,255,255,0.55) 0.9vw, transparent 1.8vw),
+    radial-gradient(circle at 90% 80%, rgba(255,0,64,0.60) 1vw, transparent 2vw);
+  background-size: cover;
+  opacity: 0.8; /* Increase opacity for more punch */
+  animation: particleFloat 18s infinite linear;
+  pointer-events: none;
 }
+#particles-bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 50%, rgba(0,255,255,0.09) 40vw, transparent 80vw);
+  z-index: 1;
+}
+
 
 @keyframes particleFloat {
   0% { transform: translate(0, 0) rotate(0deg); }
@@ -122,6 +136,7 @@ body {
   justify-content: center;
   align-items: center;
   padding: 5vw;
+  opacity: 0.8;
 }
 
 .neon-container {
