@@ -168,13 +168,7 @@ socket.on('gameStarted', lobby => {
 });
 
 
-socket.on('pointsUpdate', ({ red, blue, modifiers, purpleLeft }) => {
-  teamPoints = { red, blue };
-  updateUsageLog(modifiers, purpleLeft);
-  renderLeaderboard();
-  updateSpectatorView({ players: allPlayers });
-  checkGameOver();
-});
+
 
 socket.on('timerUpdate', seconds => {
   const mins = Math.floor(seconds / 60);
@@ -224,6 +218,279 @@ socket.on('errorMsg', msg => {
 // Track multiple peer connections for desktop
 const spectatorPeerConnections = {};
 let selectedPlayerMobile = null;
+
+
+
+
+
+
+
+// Blood/Damage System
+let playerHealth = 100;
+let bloodSplats = [];
+let maxBloodSplats = 15;
+
+// Initialize blood system
+function initBloodSystem() {
+  const bloodCanvas = document.getElementById('blood-canvas');
+  if (bloodCanvas) {
+    bloodCanvas.width = window.innerWidth;
+    bloodCanvas.height = window.innerHeight;
+  }
+
+  // Reset health and clear blood
+  playerHealth = 100;
+  clearAllBlood();
+}
+
+// More intense blood effect: splat count and size scale with missing health
+function createBloodSplat(intensity = 1) {
+  const bloodSplatsContainer = document.querySelector('.blood-splats');
+  if (!bloodSplatsContainer) return;
+  // More splats at lower health
+  const splatCount = Math.floor(intensity * 6) + 2; // was 3, now up to 8
+  for (let i = 0; i < splatCount; i++) {
+    const splat = document.createElement('div');
+    splat.className = 'blood-splat';
+    // Position: more likely to be near the center as health drops
+    const centerBias = 1 - Math.max(0, playerHealth / 100);
+    const x = 50 + (Math.random() - 0.5) * 80 * (1 - centerBias) + (Math.random() - 0.5) * 20 * centerBias;
+    const y = 50 + (Math.random() - 0.5) * 80 * (1 - centerBias) + (Math.random() - 0.5) * 20 * centerBias;
+    const size = (Math.random() * 60 + 40) * intensity; // up to 100px
+    const rotation = Math.random() * 360;
+    splat.style.left = `${x}%`;
+    splat.style.top = `${y}%`;
+    splat.style.width = `${size}px`;
+    splat.style.height = `${size}px`;
+    splat.style.opacity = `${0.7 + 0.3 * (1 - playerHealth / 100)}`; // more opaque at low health
+    splat.style.transform = `rotate(${rotation}deg)`;
+    bloodSplatsContainer.appendChild(splat);
+    bloodSplats.push(splat);
+    // Remove oldest splats if too many
+    if (bloodSplats.length > maxBloodSplats) {
+      const oldSplat = bloodSplats.shift();
+      if (oldSplat && oldSplat.parentNode) {
+        oldSplat.style.animation = 'fadeOut 0.5s ease-out forwards';
+        setTimeout(() => {
+          if (oldSplat.parentNode) oldSplat.parentNode.removeChild(oldSplat);
+        }, 500);
+      }
+    }
+  }
+}
+
+// Make vignette much darker at low health
+function updateDamageVignette() {
+  const vignette = document.querySelector('.damage-vignette');
+  if (!vignette) return;
+  vignette.className = 'damage-vignette';
+  if (playerHealth <= 15) {
+    vignette.classList.add('critical-health', 'max-blood');
+  } else if (playerHealth <= 30) {
+    vignette.classList.add('critical-health');
+  } else if (playerHealth <= 60) {
+    vignette.classList.add('low-health');
+  }
+}
+
+
+// Show damage indicator
+function showDamageIndicator(damage) {
+  const indicator = document.getElementById('damage-indicator');
+  if (!indicator) return;
+
+  const damageText = indicator.querySelector('.damage-text');
+  damageText.textContent = `-${damage} HP`;
+
+  indicator.classList.remove('hidden');
+
+  // Screen shake effect
+  document.body.classList.add('screen-shake');
+
+  setTimeout(() => {
+    indicator.classList.add('hidden');
+    document.body.classList.remove('screen-shake');
+  }, 500);
+}
+
+// Show heal indicator
+function showHealIndicator(healAmount) {
+  const indicator = document.getElementById('heal-indicator');
+  if (!indicator) return;
+
+  const healText = indicator.querySelector('.heal-text');
+  healText.textContent = `+${healAmount} HP`;
+
+  indicator.classList.remove('hidden');
+
+  setTimeout(() => {
+    indicator.classList.add('hidden');
+  }, 1000);
+}
+
+// Clear some blood (healing effect)
+function clearSomeBlood(percentage = 0.3) {
+  const splatsToRemove = Math.floor(bloodSplats.length * percentage);
+
+  for (let i = 0; i < splatsToRemove; i++) {
+    if (bloodSplats.length > 0) {
+      const splat = bloodSplats.shift();
+      if (splat && splat.parentNode) {
+        splat.style.animation = 'fadeOut 0.8s ease-out forwards';
+        setTimeout(() => {
+          if (splat.parentNode) {
+            splat.parentNode.removeChild(splat);
+          }
+        }, 800);
+      }
+    }
+  }
+}
+
+// Clear all blood
+function clearAllBlood() {
+  bloodSplats.forEach(splat => {
+    if (splat && splat.parentNode) {
+      splat.parentNode.removeChild(splat);
+    }
+  });
+  bloodSplats = [];
+
+  const vignette = document.querySelector('.damage-vignette');
+  if (vignette) {
+    vignette.className = 'damage-vignette';
+  }
+}
+
+// Handle taking damage
+function takeDamage(damage) {
+  playerHealth = Math.max(0, playerHealth - damage);
+
+  // Create blood splat based on damage
+  const intensity = damage / 10; // Scale intensity
+  createBloodSplat(intensity);
+
+  // Show damage indicator
+  showDamageIndicator(damage);
+
+  // Update vignette
+  updateDamageVignette();
+
+  // Vibrate if supported
+  if (navigator.vibrate) {
+    navigator.vibrate([200, 100, 200]);
+  }
+}
+
+// Handle healing (when shooting enemy)
+function healPlayer(healAmount = 5) {
+  const oldHealth = playerHealth;
+  playerHealth = Math.min(100, playerHealth + healAmount);
+  const actualHeal = playerHealth - oldHealth;
+
+  if (actualHeal > 0) {
+    // Clear some blood
+    clearSomeBlood(0.2);
+
+    // Show heal indicator
+    showHealIndicator(actualHeal);
+
+    // Update vignette
+    updateDamageVignette();
+  }
+}
+
+// Spectator blood effects for player cameras
+function createSpectatorBloodEffect(playerId, intensity = 1) {
+  const playerBlock = document.querySelector(`#camera-${playerId}`);
+  if (!playerBlock) return;
+
+  let overlay = playerBlock.parentNode.querySelector('.spectator-blood-overlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.className = 'spectator-blood-overlay';
+    overlay.innerHTML = '<div class="spectator-damage-vignette"></div>';
+    playerBlock.parentNode.appendChild(overlay);
+  }
+
+  const vignette = overlay.querySelector('.spectator-damage-vignette');
+  vignette.style.opacity = Math.min(0.6, intensity * 0.2);
+
+  // Fade out after a while
+  setTimeout(() => {
+    vignette.style.opacity = Math.max(0, vignette.style.opacity - 0.1);
+  }, 2000);
+}
+
+// Update your existing socket handlers
+socket.on('pointsUpdate', ({ red, blue, modifiers, purpleLeft }) => {
+  const oldTeamPoints = { ...teamPoints };
+  teamPoints = { red, blue };
+
+  // Check if our team lost points (took damage)
+  if (playerTeam && oldTeamPoints[playerTeam] > teamPoints[playerTeam]) {
+    const damage = oldTeamPoints[playerTeam] - teamPoints[playerTeam];
+    takeDamage(damage * 2); // Scale damage for visual effect
+  }
+
+  // Check if our team gained points (healed from successful shot)
+  if (playerTeam && oldTeamPoints[playerTeam] < teamPoints[playerTeam]) {
+    healPlayer(3);
+  }
+
+  updateUsageLog(modifiers, purpleLeft);
+  renderLeaderboard();
+  updateSpectatorView({ players: allPlayers });
+  checkGameOver();
+});
+
+// Initialize blood system when starting webcam
+function startWebcam() {
+  const constraints = {
+    video: {
+      facingMode: { exact: "environment" }
+    }
+  };
+
+  navigator.mediaDevices.getUserMedia(constraints)
+    .then(stream => {
+      videoElement.srcObject = stream;
+      videoElement.play();
+
+      canvasElement.width = videoElement.videoWidth || 640;
+      canvasElement.height = videoElement.videoHeight || 480;
+
+      const context = canvasElement.getContext('2d', { willReadFrequently: true });
+
+      // Initialize blood system
+      initBloodSystem();
+    })
+    .catch(err => {
+      console.warn('Could not use back camera. Falling back to default.', err);
+      fallbackToDefaultCamera();
+    });
+}
+
+// Add CSS fadeOut animation
+const additionalCSS = `
+@keyframes fadeOut {
+  0% { opacity: 0.8; }
+  100% { opacity: 0; }
+}
+`;
+
+const style = document.createElement('style');
+style.textContent = additionalCSS;
+document.head.appendChild(style);
+
+
+
+
+
+
+
+
+
 
 function updateSpectatorView(lobby) {
   const redList = document.getElementById('red-team-list');
@@ -739,31 +1006,6 @@ function assignTeam(lobby) {
 }
 
 // Fix Canvas2D performance warning
-function startWebcam() {
-  const constraints = {
-    video: {
-      facingMode: { exact: "environment" }
-    }
-  };
-
-  navigator.mediaDevices.getUserMedia(constraints)
-    .then(stream => {
-      videoElement.srcObject = stream;
-      videoElement.play();
-
-      // Fix: Set willReadFrequently when getting canvas context
-      canvasElement.width = videoElement.videoWidth || 640;
-      canvasElement.height = videoElement.videoHeight || 480;
-
-      // This fixes the Canvas2D warning
-      const context = canvasElement.getContext('2d', { willReadFrequently: true });
-
-    })
-    .catch(err => {
-      console.warn('Could not use back camera. Falling back to default.', err);
-      fallbackToDefaultCamera();
-    });
-}
 
 function fallbackToDefaultCamera() {
   navigator.mediaDevices.getUserMedia({ video: true })
