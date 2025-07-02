@@ -502,7 +502,7 @@ input[type="text"]:focus {
 .teams-container {
   display: flex;
   justify-content: space-around;
-  align-items: flex-start;
+  align-items: center;
   width: 100%;
   max-width: 37.5rem;
   margin: 1.8rem 0;
@@ -600,6 +600,7 @@ input[type="text"]:focus {
     width: 20vw;
     height: 20vw;
     font-size: 1rem;
+    -webkit-tap-highlight-color: transparent;
   }
 }
 
