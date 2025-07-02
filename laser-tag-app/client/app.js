@@ -321,6 +321,10 @@ function detectColor() {
   let detectedColor = detectDominantColor(data);
 
   if (detectedColor) {
+    // Vibrate the device for 200ms if supported
+    if (navigator.vibrate) {
+      navigator.vibrate(200); // You can adjust the duration or use a pattern
+    }
     socket.emit('teamHit', {
       sessionId,
       shooterTeam: playerTeam,
@@ -343,6 +347,7 @@ function detectColor() {
     setTimeout(() => document.body.removeChild(toast), 2000);
   }
 }
+
 function detectColorLoop() {
   setInterval(detectColor, 700);
 }

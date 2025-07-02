@@ -39,7 +39,7 @@ io.on('connection', socket => {
     socket.on('createSession', ({ username }) => {
         const sessionId = makeCode();
         sessions[sessionId] = {
-            timer: 60, // 1 minutes
+            timer: 120, // 1 minutes
             interval: null,
             hostId: socket.id,
             players: [{ id: socket.id, name: username }],
@@ -89,7 +89,7 @@ io.on('connection', socket => {
         teamShotModifiers[sessionId] = { red: 3, blue: 3 };
         purpleScansRemaining[sessionId] = { red: 3, blue: 3 };
         s.teamPoints = { red: 100, blue: 100 };
-        s.timer = 60; // 2 minutes
+        s.timer =120; // 2 minutes
         s.interval = null;
 
         io.to(sessionId).emit('gameStarted', s);
