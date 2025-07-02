@@ -115,20 +115,48 @@ socket.on('pointsUpdate', ({ red, blue, modifiers, purpleLeft }) => {
 socket.on('timerUpdate', seconds => {
   const mins = Math.floor(seconds / 60);
   const secs = seconds % 60;
-  timerDisplay.textContent = `⏱️ ${mins}:${secs.toString().padStart(2, '0')}`;
+  const formatted = `⏱️ ${mins}:${secs.toString().padStart(2, '0')}`;
+
+  const timerPlayer = document.getElementById('game-timer-player');
+  if (timerPlayer) timerPlayer.textContent = formatted;
+
+  const timerSpectator = document.getElementById('game-timer-spectator');
+  if (timerSpectator) timerSpectator.textContent = formatted;
 });
 
+
 socket.on('gameEnded', winner => {
-  videoElement.pause();
+  // Pause video if present (players)
+  if (videoElement && typeof videoElement.pause === 'function') videoElement.pause();
+
+  // Hide all screens except the overlay
+  document.querySelectorAll('.screen').forEach(el => el.classList.add('hidden'));
   gameOverOverlay.classList.remove('hidden');
+
+  // Determine if this client is a spectator
+  const isSpectator = !playerTeam;
+
+  // Set winner text based on role
   if (winner === 'draw') {
     winnerText.textContent = `🤝 It's a DRAW!`;
+  } else if (isSpectator) {
+    // Spectator: show which team won
+    if (winner === 'red') {
+      winnerText.textContent = `🔴 RED TEAM WON!`;
+    } else if (winner === 'blue') {
+      winnerText.textContent = `🔵 BLUE TEAM WON!`;
+    }
   } else if (playerTeam === winner) {
+    // Player: won
     winnerText.textContent = `🏆 Your Team (${winner.toUpperCase()}) WON!`;
+    launchConfetti();
   } else {
+    // Player: lost
     winnerText.textContent = `💀 Your Team LOST...`;
   }
 });
+
+
 
 
 
@@ -162,6 +190,46 @@ function updateSpectatorView(lobby) {
 
   redScore.textContent = teamPoints.red;
   blueScore.textContent = teamPoints.blue;
+}
+
+
+function launchConfetti() {
+  // Show the canvas
+  const canvas = document.getElementById('confetti-canvas');
+  canvas.classList.remove('hidden');
+  // Make sure the canvas covers the viewport
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  // Create a confetti instance on your canvas
+  const myConfetti = confetti.create(canvas, { resize: true, useWorker: true });
+
+  // Fire multiple bursts for a more exciting effect
+  myConfetti({
+    particleCount: 80,
+    spread: 70,
+    origin: { y: 0.6 }
+  });
+  myConfetti({
+    particleCount: 60,
+    spread: 120,
+    startVelocity: 40,
+    origin: { y: 0.7 }
+  });
+  myConfetti({
+    particleCount: 40,
+    spread: 90,
+    startVelocity: 60,
+    origin: { y: 0.8 }
+  });
+
+  // Optionally hide the canvas after animation (e.g., after 2 seconds)
+  setTimeout(() => {
+    canvas.classList.add('hidden');
+    // Optionally clear the canvas
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }, 2000);
 }
 
 function switchScreen(hideId, showId) {
@@ -207,6 +275,30 @@ function updateLobby(lobby) {
 
   renderLeaderboard();
 }
+
+// Helper to hide all screens except overlay
+function showGameOverOverlay(winner) {
+  // Hide all screens
+  document.querySelectorAll('.screen').forEach(el => el.classList.add('hidden'));
+  // Show overlay
+  gameOverOverlay.classList.remove('hidden');
+
+  // Set winner text and effects
+  if (winner === 'draw') {
+    winnerText.innerHTML = `🤝 <span style="color:#f39c12;">It's a DRAW!</span>`;
+    gameOverOverlay.style.background = 'radial-gradient(circle, #333 60%, #f39c12 100%)';
+  } else if (playerTeam === winner) {
+    winnerText.innerHTML = `🏆 <span style="color:#4a90e2;text-shadow:0 0 20px #4a90e2;">Your Team (${winner.toUpperCase()}) WON!</span>`;
+    gameOverOverlay.style.background = 'radial-gradient(circle, #4a90e2 60%, #fff 100%)';
+    launchConfetti();
+  } else {
+    winnerText.innerHTML = `💀 <span style="color:#e74c3c;text-shadow:0 0 20px #e74c3c;">Your Team LOST...</span>`;
+    gameOverOverlay.style.background = 'radial-gradient(circle, #222 60%, #e74c3c 100%)';
+  }
+  // Animate overlay
+  gameOverOverlay.style.animation = 'popIn 0.8s cubic-bezier(0.23, 1, 0.32, 1)';
+}
+
 
 function assignTeam(lobby) {
   const index = lobby.players.findIndex(p => p.name === username);
@@ -344,7 +436,8 @@ function updateUsageLog(modifiers = {}, purpleLeft = {}) {
 
 function checkGameOver() {
   if (teamPoints[playerTeam] <= 0) {
-    alert('💀 Your team is out of points. Game Over!');
     videoElement.pause();
+    gameOverOverlay.classList.remove('hidden');
+    winnerText.textContent = `💀 Your Team LOST...`;
   }
 }
