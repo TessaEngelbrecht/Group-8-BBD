@@ -34,12 +34,24 @@ function makeCode() {
     return Math.floor(1000 + Math.random() * 9000).toString();
 }
 
+// Helper: Only send plain lobby data (no socket or circular refs)
+function getPublicLobby(s) {
+    return {
+        hostId: s.hostId,
+        players: s.players.map(p => ({ id: p.id, name: p.name })), // ensure plain objects
+        spectators: s.spectators.map(sp => ({ id: sp.id, name: sp.name })),
+        started: s.started,
+        teamPoints: s.teamPoints,
+        timer: s.timer
+    };
+}
+
 io.on('connection', socket => {
 
     socket.on('createSession', ({ username }) => {
         const sessionId = makeCode();
         sessions[sessionId] = {
-            timer: 120, // 1 minutes
+            timer: 120, // 2 minutes
             interval: null,
             hostId: socket.id,
             players: [{ id: socket.id, name: username }],
@@ -48,7 +60,7 @@ io.on('connection', socket => {
             teamPoints: { red: 100, blue: 100 }
         };
         socket.join(sessionId);
-        io.to(socket.id).emit('sessionCreated', { sessionId, lobby: sessions[sessionId] });
+        io.to(socket.id).emit('sessionCreated', { sessionId, lobby: getPublicLobby(sessions[sessionId]) });
     });
 
     socket.on('joinSession', ({ username, sessionId, asSpectator }) => {
@@ -75,7 +87,7 @@ io.on('connection', socket => {
             s.players.push({ id: socket.id, name: username });
         }
 
-        io.to(sessionId).emit('lobbyUpdate', s);
+        io.to(sessionId).emit('lobbyUpdate', getPublicLobby(s));
     });
 
     socket.on('startGame', ({ sessionId }) => {
@@ -89,10 +101,10 @@ io.on('connection', socket => {
         teamShotModifiers[sessionId] = { red: 3, blue: 3 };
         purpleScansRemaining[sessionId] = { red: 3, blue: 3 };
         s.teamPoints = { red: 100, blue: 100 };
-        s.timer =120; // 2 minutes
+        s.timer = 120; // 2 minutes
         s.interval = null;
 
-        io.to(sessionId).emit('gameStarted', s);
+        io.to(sessionId).emit('gameStarted', getPublicLobby(s));
 
         // Emit initial points and modifiers
         io.to(sessionId).emit('pointsUpdate', {
@@ -118,7 +130,6 @@ io.on('connection', socket => {
             }
         }, 1000);
     });
-
 
     socket.on('teamHit', ({ sessionId, shooterTeam, victimTeam, scannedColor }) => {
         const s = sessions[sessionId];
@@ -165,8 +176,6 @@ io.on('connection', socket => {
         }
     });
 
-
-
     socket.on('disconnect', () => {
         for (const [sid, s] of Object.entries(sessions)) {
             const idxP = s.players.findIndex(p => p.id === socket.id);
@@ -179,7 +188,7 @@ io.on('connection', socket => {
                 delete teamShotModifiers[sid];
                 delete purpleScansRemaining[sid];
             } else {
-                io.to(sid).emit('lobbyUpdate', s);
+                io.to(sid).emit('lobbyUpdate', getPublicLobby(s));
             }
         }
     });
