@@ -54,11 +54,18 @@ shootBtn.onclick = () => {
 
 continueBtn.onclick = () => {
   username = document.getElementById('username').value.trim();
-  if (username) {
-    document.getElementById('display-username').textContent = username;
-    switchScreen('login-screen', 'choose-screen');
+  if (username.length === 0) {
+    alert('Username cannot be empty');
+    return;
   }
+  if (username.length > 15) {
+    alert('Username cannot be longer than 15 characters');
+    return;
+  }
+  document.getElementById('display-username').textContent = username;
+  switchScreen('login-screen', 'choose-screen');
 };
+
 
 createBtn.onclick = () => {
   socket.emit('createSession', { username });
@@ -70,6 +77,10 @@ joinPlayerBtn.onclick = () => {
     socket.emit('joinSession', { username, sessionId, asSpectator: false });
   }
   //switchScreen("choose-screen", "lobby-screen")
+};
+
+document.getElementById('restart-btn').onclick = () => {
+  window.location.reload();
 };
 
 joinSpectatorBtn.onclick = () => {
