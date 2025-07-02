@@ -45,10 +45,10 @@ const shootBtn = document.getElementById('shoot-btn');
 
 shootBtn.onclick = () => {
   //alert('vibrate' in navigator);
-  if ('vibrate' in navigator) {
-    alert('in');
-    navigator.vibrate([100, 50, 100]); // or [100, 50, 100] for a pattern
-  }
+  // if ('vibrate' in navigator) {
+  //   //alert('in');
+  //   navigator.vibrate([100, 50, 100]); // or [100, 50, 100] for a pattern
+  // }
   detectColor();
 };
 
@@ -328,7 +328,7 @@ function detectColor() {
   if (detectedColor) {
     // Vibrate the device for 200ms if supported
     if (navigator.vibrate) {
-      navigator.vibrate(200); // You can adjust the duration or use a pattern
+      navigator.vibrate([100, 50, 100]); // You can adjust the duration or use a pattern
     }
     socket.emit('teamHit', {
       sessionId,
