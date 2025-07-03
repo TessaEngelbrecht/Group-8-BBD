@@ -467,7 +467,9 @@ socket.on('spectator-watch-request', async ({ spectatorId }) => {
 
   const answerHandler = async ({ from, answer }) => {
     if (from === spectatorId) {
-      await pc.setRemoteDescription(new RTCSessionDescription(answer));
+      if (pc.signalingState !== 'stable' && pc.signalingState !== 'closed') {
+        await pc.setRemoteDescription(new RTCSessionDescription(answer));
+      }      
       socket.off('webrtc-answer', answerHandler);
     }
   };
@@ -584,19 +586,26 @@ function selectPlayerCameraMobile(playerId, playerName) {
   const handleOfferMobile = async ({ from, offer }) => {
     if (from === playerId && pc.signalingState !== 'closed') {
       try {
+        if (pc.signalingState === 'stable') {
+          // Already negotiated, ignore duplicate offer
+          return;
+        }
         await pc.setRemoteDescription(new RTCSessionDescription(offer));
-        const answer = await pc.createAnswer();
-        await pc.setLocalDescription(answer);
-        socket.emit('webrtc-answer', { to: playerId, answer });
-        (pendingIceCandidates[playerId] || []).forEach(candidate => {
-          pc.addIceCandidate(new RTCIceCandidate(candidate)).catch(() => { });
-        });
-        pendingIceCandidates[playerId] = [];
+        if (pc.signalingState === 'have-remote-offer') {
+          const answer = await pc.createAnswer();
+          await pc.setLocalDescription(answer);
+          socket.emit('webrtc-answer', { to: playerId, answer });
+          (pendingIceCandidates[playerId] || []).forEach(candidate => {
+            pc.addIceCandidate(new RTCIceCandidate(candidate)).catch(() => { });
+          });
+          pendingIceCandidates[playerId] = [];
+        }
       } catch (error) {
         console.warn(`Mobile WebRTC offer error for player ${playerId}:`, error);
       }
     }
   };
+  
 
   const handleIceCandidateMobile = ({ from, candidate }) => {
     if (from === playerId && candidate && pc.signalingState !== 'closed') {
