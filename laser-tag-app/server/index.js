@@ -8,7 +8,6 @@ const app = express();
 const allowedOrigins = [
     'http://localhost:3000',
     'https://group-8-bbd.vercel.app',
-    'http://192.168.46.77:3000'
 ];
 
 app.use(cors({
