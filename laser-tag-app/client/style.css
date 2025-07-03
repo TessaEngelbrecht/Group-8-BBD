@@ -6,7 +6,6 @@
   --neon-yellow: #ffff00;
   --dark-bg: #0a0a0a;
   --darker-bg: #050505;
-  --grid-color: #1a1a2e;
   --text-primary: #ffffff;
   --text-secondary: #b0b0b0;
 }
@@ -15,38 +14,28 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  touch-action: manipulation;
 }
 
-body {
-  font-family: 'Orbitron', monospace;
-  background: var(--dark-bg);
-  color: var(--text-primary);
-  overflow-x: hidden;
-  position: relative;
-  min-height: 100vh;
-  opacity: 0.9;
-}
 html, body {
   font-family: 'Orbitron', monospace;
   background: var(--dark-bg);
   color: var(--text-primary);
   height: 100%;
   width: 100%;
-  overflow-x: hidden; /* Only hide horizontal scroll */
-  overflow-y: hidden; /* Only hide vertical scroll */
-  overscroll-behavior: none;
-  margin: 0;
-  padding: 0;
-  position: relative; /* Important for particles positioning */
+  overflow-x: hidden;
+  position: relative;
+  min-height: 100vh;
+  opacity: 0.9;
+  touch-action: pan-y;
+  overflow-y: auto;
 }
 
 #particles-bg {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: -2; /* Keep this negative so it stays behind content */
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  z-index: -2;
   background:
     radial-gradient(circle at 15% 25%, rgba(0,255,255,0.55) 0.8vw, transparent 1.6vw),
     radial-gradient(circle at 40% 70%, rgba(255,0,64,0.45) 1vw, transparent 2vw),
@@ -71,35 +60,30 @@ html, body {
   z-index: 1;
 }
 
-
 @keyframes particleFloat {
   0% { transform: translate(0, 0) rotate(0deg); }
   100% { transform: translate(-6rem, -6rem) rotate(360deg); }
 }
 
-/* EFFECT 2: Team Ambient Lighting */
+/* Team Ambient Lighting */
 #team-ambient {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
   z-index: -1;
   transition: all 0.5s ease;
   pointer-events: none;
 }
-
 #team-ambient.red-ambient {
   background: radial-gradient(circle at center, rgba(255, 0, 64, 0.15) 0%, transparent 70%);
   box-shadow: inset 0 0 6rem rgba(255, 0, 64, 0.2);
 }
-
 #team-ambient.blue-ambient {
   background: radial-gradient(circle at center, rgba(0, 255, 255, 0.15) 0%, transparent 70%);
   box-shadow: inset 0 0 6rem rgba(0, 255, 255, 0.2);
 }
 
-/* EFFECT 3: Neon Text and Glowing Elements */
+/* Neon Text */
 .neon-text {
   color: var(--neon-blue);
   text-shadow:
@@ -112,19 +96,15 @@ html, body {
   text-transform: uppercase;
   letter-spacing: 0.12rem;
 }
-
 @keyframes neonPulse {
   0% { text-shadow: 0 0 0.3rem currentColor, 0 0 0.6rem currentColor, 0 0 1.2rem currentColor; }
   100% { text-shadow: 0 0 0.6rem currentColor, 0 0 1.2rem currentColor, 0 0 2.4rem currentColor, 0 0 3.6rem currentColor; }
 }
 
-/* EFFECT 4: Scan Lines */
+/* Scan Lines */
 .scan-lines {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  top: 0; left: 0; right: 0; bottom: 0;
   background: linear-gradient(
     transparent 50%,
     rgba(0, 255, 255, 0.1) 51%,
@@ -135,7 +115,6 @@ html, body {
   pointer-events: none;
   z-index: 10;
 }
-
 @keyframes scanMove {
   0% { transform: translateY(0); }
   100% { transform: translateY(100vh); }
@@ -152,7 +131,6 @@ html, body {
   padding: 5vw;
   opacity: 0.8;
 }
-
 .neon-container {
   background:
     linear-gradient(135deg, rgba(26, 26, 46, 0.9) 0%, rgba(10, 10, 10, 0.95) 100%),
@@ -176,12 +154,10 @@ html, body {
   text-align: center;
   margin-bottom: 2.5rem;
 }
-
 .logo-container h1 {
   font-size: 3rem;
   margin-bottom: 0.6rem;
 }
-
 .subtitle {
   color: var(--neon-yellow);
   font-size: 1.2rem;
@@ -189,13 +165,12 @@ html, body {
   letter-spacing: 0.18rem;
   animation: textGlow 3s ease-in-out infinite;
 }
-
 @keyframes textGlow {
   0%, 100% { opacity: 0.7; }
   50% { opacity: 1; }
 }
 
-/* EFFECT 5: Futuristic Buttons */
+/* Futuristic Buttons */
 .neon-btn {
   position: relative;
   background: transparent;
@@ -214,7 +189,6 @@ html, body {
   transition: all 0.3s ease;
   min-width: 12.5rem;
 }
-
 .neon-btn:hover {
   color: var(--dark-bg);
   background: var(--neon-blue);
@@ -224,26 +198,19 @@ html, body {
     0 0 3.6rem var(--neon-blue);
   transform: translateY(-0.12rem);
 }
-
 .neon-btn.primary { border-color: var(--neon-green); color: var(--neon-green); }
 .neon-btn.primary:hover { background: var(--neon-green); box-shadow: 0 0 1.2rem var(--neon-green); }
-
 .neon-btn.create { border-color: var(--neon-purple); color: var(--neon-purple); }
 .neon-btn.create:hover { background: var(--neon-purple); box-shadow: 0 0 1.2rem var(--neon-purple); }
-
 .neon-btn.join { border-color: var(--neon-yellow); color: var(--neon-yellow); }
 .neon-btn.join:hover { background: var(--neon-yellow); box-shadow: 0 0 1.2rem var(--neon-yellow); }
-
 .btn-glow {
   position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
+  top: 0; left: -100%;
+  width: 100%; height: 100%;
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
   transition: left 0.5s;
 }
-
 .neon-btn:hover .btn-glow {
   left: 100%;
 }
@@ -262,7 +229,6 @@ input[type="text"] {
   margin: 0.6rem;
   transition: all 0.3s ease;
 }
-
 input[type="text"]:focus {
   outline: none;
   border-color: var(--neon-blue);
@@ -276,12 +242,9 @@ input[type="text"]:focus {
   justify-content: flex-start;
   background: var(--darker-bg);
 }
-
 .hud-top {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
+  top: 0; left: 0; right: 0;
   height: 8vh;
   background: rgba(0, 0, 0, 0.8);
   backdrop-filter: blur(0.6rem);
@@ -292,14 +255,12 @@ input[type="text"]:focus {
   z-index: 100;
   border-bottom: 0.06rem solid rgba(0, 255, 255, 0.3);
 }
-
 .timer {
   font-size: 1.5rem;
   font-weight: 700;
   color: var(--neon-yellow);
   text-shadow: 0 0 0.6rem currentColor;
 }
-
 .team-indicator {
   font-size: 1.2rem;
   font-weight: 700;
@@ -308,24 +269,20 @@ input[type="text"]:focus {
   border: 0.12rem solid;
   animation: teamGlow 2s ease-in-out infinite;
 }
-
 .team-indicator.red {
   color: var(--neon-red);
   border-color: var(--neon-red);
   background: rgba(255, 0, 64, 0.1);
 }
-
 .team-indicator.blue {
   color: var(--neon-blue);
   border-color: var(--neon-blue);
   background: rgba(0, 255, 255, 0.1);
 }
-
 @keyframes teamGlow {
   0%, 100% { box-shadow: 0 0 0.6rem currentColor; }
   50% { box-shadow: 0 0 1.2rem currentColor, 0 0 1.8rem currentColor; }
 }
-
 .game-main {
   flex: 1;
   width: 100%;
@@ -333,7 +290,6 @@ input[type="text"]:focus {
   margin-top: 8vh;
   margin-bottom: 15vh;
 }
-
 .camera-container {
   position: relative;
   width: 100%;
@@ -344,35 +300,26 @@ input[type="text"]:focus {
   border: 0.12rem solid rgba(0, 255, 255, 0.5);
   box-shadow: 0 0 1.8rem rgba(0, 255, 255, 0.2);
 }
-
 #webcam {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
-
 /* Targeting Overlay */
 .targeting-overlay {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  top: 0; left: 0; right: 0; bottom: 0;
   pointer-events: none;
 }
-
 .crosshair {
   position: absolute;
-  top: 50%;
-  left: 50%;
+  top: 50%; left: 50%;
   transform: translate(-50%, -50%);
-  width: 3.75rem;
-  height: 3.75rem;
+  width: 3.75rem; height: 3.75rem;
   border: 0.12rem solid var(--neon-red);
   border-radius: 50%;
   animation: crosshairPulse 1.5s ease-in-out infinite;
 }
-
 .crosshair::before,
 .crosshair::after {
   content: '';
@@ -380,33 +327,23 @@ input[type="text"]:focus {
   background: var(--neon-red);
   border-radius: 0.12rem;
 }
-
 .crosshair::before {
-  top: 50%;
-  left: 15%;
-  right: 15%;
-  height: 0.12rem;
+  top: 50%; left: 15%; right: 15%; height: 0.12rem;
   transform: translateY(-50%);
 }
-
 .crosshair::after {
-  left: 50%;
-  top: 15%;
-  bottom: 15%;
-  width: 0.12rem;
+  left: 50%; top: 15%; bottom: 15%; width: 0.12rem;
   transform: translateX(-50%);
 }
-
 @keyframes crosshairPulse {
   0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.7; }
   50% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
 }
-
 .floating-ui {
   position: fixed;
   left: 50%;
   transform: translateX(-50%);
-  bottom: 20vh; /* adjust as needed */
+  bottom: 20vh;
   display: inline-flex;
   flex-direction: row;
   gap: 2vw;
@@ -417,7 +354,6 @@ input[type="text"]:focus {
   width: auto;
   max-width: 90vw;
 }
-
 .leaderboard-mini,
 .usage-stats {
   pointer-events: auto;
@@ -433,29 +369,20 @@ input[type="text"]:focus {
   color: var(--neon-blue);
   text-align: center;
 }
-
 .usage-stats {
   border: 0.12rem solid var(--neon-red);
   color: var(--neon-red);
 }
-
-
 .usage-stats .stat-item {
   margin-bottom: 1vw;
   font-size: 0.9em;
 }
-
 .usage-stats .stat-item:last-child {
   margin-bottom: 0;
 }
-
-
-
 .controls-bottom {
   position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  bottom: 0; left: 0; right: 0;
   height: 15vh;
   background: rgba(0, 0, 0, 0.95);
   backdrop-filter: blur(0.9rem);
@@ -465,14 +392,10 @@ input[type="text"]:focus {
   padding-bottom: 2vh;
   z-index: 100;
 }
-
 .shoot-button {
-  width: 15vw;
-  height: 15vw;
-  max-width: 7.5rem;
-  max-height: 7.5rem;
-  min-width: 6rem;
-  min-height: 6rem;
+  width: 15vw; height: 15vw;
+  max-width: 7.5rem; max-height: 7.5rem;
+  min-width: 6rem; min-height: 6rem;
   border-radius: 50%;
   background: radial-gradient(circle, var(--neon-red) 0%, rgba(255, 0, 64, 0.3) 100%);
   border: 0.25rem solid var(--neon-red);
@@ -489,24 +412,19 @@ input[type="text"]:focus {
     0 0 1.8rem var(--neon-red),
     0 0.6rem 1.2rem rgba(0, 0, 0, 0.3);
 }
-
 .shoot-button:active {
   transform: translateY(-0.9rem) scale(0.95);
   box-shadow:
     0 0 3rem var(--neon-red),
     0 0.3rem 0.9rem rgba(0, 0, 0, 0.4);
 }
-
 .shoot-glow {
   position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
+  top: -50%; left: -50%;
+  width: 200%; height: 200%;
   background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
   animation: shootGlow 2s ease-in-out infinite;
 }
-
 @keyframes shootGlow {
   0%, 100% { opacity: 0; transform: scale(0.8); }
   50% { opacity: 1; transform: scale(1.2); }
@@ -521,7 +439,6 @@ input[type="text"]:focus {
   max-width: 37.5rem;
   margin: 1.8rem 0;
 }
-
 .team-section {
   flex: 1;
   text-align: center;
@@ -530,17 +447,14 @@ input[type="text"]:focus {
   border: 0.12rem solid;
   margin: 0 0.6rem;
 }
-
 .team-section.red-team {
   border-color: var(--neon-red);
   background: rgba(255, 0, 64, 0.1);
 }
-
 .team-section.blue-team {
   border-color: var(--neon-blue);
   background: rgba(0, 255, 255, 0.1);
 }
-
 .vs-divider {
   font-size: 2rem;
   font-weight: 900;
@@ -549,7 +463,6 @@ input[type="text"]:focus {
   margin: 0 1.2rem;
   animation: vsGlow 1.5s ease-in-out infinite;
 }
-
 @keyframes vsGlow {
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.1); }
@@ -558,10 +471,8 @@ input[type="text"]:focus {
 /* Game Over Overlay */
 #game-over-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
   background: radial-gradient(circle, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.8) 100%);
   display: flex;
   justify-content: center;
@@ -569,24 +480,20 @@ input[type="text"]:focus {
   z-index: 1000;
   backdrop-filter: blur(0.9rem);
 }
-
 .victory-container {
   text-align: center;
   animation: victoryAppear 1s ease-out;
 }
-
 .victory-text {
   font-size: 4rem;
   font-weight: 900;
   margin-bottom: 1.2rem;
   animation: victoryPulse 2s ease-in-out infinite;
 }
-
 @keyframes victoryAppear {
   0% { opacity: 0; transform: scale(0.5) translateY(3.125rem); }
   100% { opacity: 1; transform: scale(1) translateY(0); }
 }
-
 @keyframes victoryPulse {
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.05); }
@@ -636,28 +543,23 @@ input[type="text"]:focus {
   border-radius: 0.3rem;
   border: 0.06rem solid;
 }
-
 .red-score {
   border-color: var(--neon-red);
   background: rgba(255, 0, 64, 0.1);
 }
-
 .blue-score {
   border-color: var(--neon-blue);
   background: rgba(0, 255, 255, 0.1);
 }
-
 .team-label {
   font-weight: 700;
   font-size: 0.9rem;
 }
-
 .score-value {
   font-weight: 900;
   font-size: 1.1rem;
   text-shadow: 0 0 0.6rem currentColor;
 }
-
 .player-item, .spectator-item {
   padding: 0.5rem 0.75rem;
   margin: 0.3rem 0;
@@ -665,19 +567,16 @@ input[type="text"]:focus {
   border: 0.06rem solid;
   font-weight: 600;
 }
-
 .red-player {
   background: rgba(255, 0, 64, 0.2);
   border-color: var(--neon-red);
   color: var(--neon-red);
 }
-
 .blue-player {
   background: rgba(0, 255, 255, 0.2);
   border-color: var(--neon-blue);
   color: var(--neon-blue);
 }
-
 .spectator-item {
   background: rgba(255, 255, 0, 0.1);
   border-color: var(--neon-yellow);
@@ -704,11 +603,8 @@ input[type="text"]:focus {
   transform: scale(1.07);
   box-shadow: 0 0 1.2em var(--neon-green);
 }
-/* SPECTATOR SCREEN - Single Screen Layout */
 
-
-
-/* SPECTATOR SCREEN - Responsive Layout */
+/* SPECTATOR SCREEN */
 #spectator-screen {
   padding: 0;
   height: 100vh;
@@ -717,7 +613,6 @@ input[type="text"]:focus {
   flex-direction: column;
   background: var(--darker-bg);
 }
-
 .spectator-header {
   flex-shrink: 0;
   text-align: center;
@@ -726,21 +621,17 @@ input[type="text"]:focus {
   backdrop-filter: blur(0.6rem);
   border-bottom: 0.06rem solid rgba(0, 255, 255, 0.3);
 }
-
 .spectator-header h2 {
   font-size: clamp(1.2rem, 4vw, 2rem);
   color: var(--neon-yellow);
   text-shadow: 0 0 0.7rem var(--neon-yellow);
   margin-bottom: 0.5vh;
 }
-
 .spectator-header .timer {
   font-size: clamp(1rem, 3vw, 1.5rem);
   color: var(--neon-yellow);
   text-shadow: 0 0 0.6rem currentColor;
 }
-
-/* Main Content Area */
 .spectator-main {
   flex: 1;
   display: flex;
@@ -749,8 +640,6 @@ input[type="text"]:focus {
   gap: 1vh;
   overflow: hidden;
 }
-
-/* Battle Overview - Compact */
 .battle-overview {
   flex-shrink: 0;
   display: flex;
@@ -764,7 +653,6 @@ input[type="text"]:focus {
   height: auto;
   min-height: 15vh;
 }
-
 .team-stats {
   flex: 1;
   background: rgba(0,0,0,0.3);
@@ -774,26 +662,22 @@ input[type="text"]:focus {
   flex-direction: column;
   min-width: 0;
 }
-
 .team-stats h3 {
   font-size: clamp(0.9rem, 2.5vw, 1.2rem);
   margin-bottom: 0.5vh;
   text-align: center;
   white-space: nowrap;
 }
-
 .red-stats {
   border: 0.1rem solid var(--neon-red);
   color: var(--neon-red);
   box-shadow: 0 0 0.8rem var(--neon-red) inset;
 }
-
 .blue-stats {
   border: 0.1rem solid var(--neon-blue);
   color: var(--neon-blue);
   box-shadow: 0 0 0.8rem var(--neon-blue) inset;
 }
-
 .team-score {
   font-size: clamp(1.5rem, 5vw, 2.5rem);
   font-weight: 900;
@@ -801,7 +685,6 @@ input[type="text"]:focus {
   margin: 0.5vh 0;
   text-shadow: 0 0 0.5rem currentColor;
 }
-
 .team-stats ul {
   flex: 1;
   list-style: none;
@@ -810,7 +693,6 @@ input[type="text"]:focus {
   overflow-y: auto;
   max-height: 8vh;
 }
-
 .team-stats li {
   padding: 0.3vh 0.5vw;
   margin: 0.2vh 0;
@@ -825,17 +707,14 @@ input[type="text"]:focus {
   cursor: pointer;
   transition: all 0.2s ease;
 }
-
 .team-stats li:hover {
   background: rgba(255, 255, 255, 0.2);
   transform: scale(1.02);
 }
-
 .team-stats li.selected {
   background: rgba(255, 255, 255, 0.3);
   box-shadow: 0 0 0.5rem currentColor;
 }
-
 .battle-divider {
   font-size: clamp(1.5rem, 4vw, 2.2rem);
   color: var(--neon-yellow);
@@ -844,80 +723,6 @@ input[type="text"]:focus {
   animation: vsGlow 1.5s ease-in-out infinite;
   white-space: nowrap;
 }
-
-/* DESKTOP: Multi-Camera Grid */
-.spectator-cameras-grid {
-  flex: 1;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1vh;
-  min-height: 0;
-  padding: 0.5vh 0;
-}
-
-.player-camera-block {
-  background: rgba(10, 10, 16, 0.9);
-  border-radius: 0.8rem;
-  padding: 1vh;
-  border: 0.1rem solid var(--neon-blue);
-  box-shadow: 0 0 0.8rem rgba(0, 255, 255, 0.2);
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-}
-
-.player-camera-block.red-team {
-  border-color: var(--neon-red);
-  box-shadow: 0 0 0.8rem rgba(255, 0, 64, 0.2);
-}
-
-.player-camera-block.blue-team {
-  border-color: var(--neon-blue);
-  box-shadow: 0 0 0.8rem rgba(0, 255, 255, 0.2);
-}
-
-.player-camera-header {
-  text-align: center;
-  margin-bottom: 0.5vh;
-  font-size: 0.9rem;
-  font-weight: 700;
-  text-shadow: 0 0 0.5rem currentColor;
-}
-
-.player-camera-header.red-team {
-  color: var(--neon-red);
-}
-
-.player-camera-header.blue-team {
-  color: var(--neon-blue);
-}
-
-.player-camera-video {
-  flex: 1;
-  width: 100%;
-  height: 100%;
-  min-height: 150px;
-  object-fit: cover;
-  border-radius: 0.5rem;
-  background: rgba(0, 0, 0, 0.5);
-  border: 0.05rem solid currentColor;
-}
-
-.player-camera-placeholder {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 0.5rem;
-  color: var(--text-secondary);
-  font-size: 0.8rem;
-  text-align: center;
-  min-height: 150px;
-  border: 0.05rem dashed currentColor;
-}
-
-/* MOBILE: Single Camera View */
 .spectator-camera-section {
   flex: 1;
   display: flex;
@@ -925,7 +730,6 @@ input[type="text"]:focus {
   gap: 1vh;
   min-height: 0;
 }
-
 .spectator-camera-label {
   text-align: center;
   color: var(--neon-blue);
@@ -933,7 +737,6 @@ input[type="text"]:focus {
   font-size: clamp(0.8rem, 2.5vw, 1rem);
   text-shadow: 0 0 0.5rem currentColor;
 }
-
 #spectator-camera-feed {
   width: 100%;
   height: 100%;
@@ -944,8 +747,6 @@ input[type="text"]:focus {
   box-shadow: 0 0 1rem var(--neon-blue);
   background: rgba(0, 0, 0, 0.5);
 }
-
-/* Stats Section */
 .spectator-stats {
   flex-shrink: 0;
   display: flex;
@@ -953,7 +754,6 @@ input[type="text"]:focus {
   height: auto;
   min-height: 8vh;
 }
-
 .spectator-stats > div {
   flex: 1;
   background: rgba(10, 10, 16, 0.93);
@@ -964,133 +764,54 @@ input[type="text"]:focus {
   border: 0.08rem solid;
   overflow: hidden;
 }
-
 .modifiers-log {
   border-color: var(--neon-blue);
   color: var(--neon-blue);
 }
-
 .purple-log {
   border-color: var(--neon-red);
   color: var(--neon-red);
 }
-
-/* RESPONSIVE BREAKPOINTS */
-
-/* Desktop: Show multi-camera grid */
-/* @media (min-width: 768px) {
-  .spectator-cameras-grid {
-    display: grid;
-  }
-  
-  .spectator-camera-section {
-    display: none;
-  }
-  
-  .team-stats li {
-    cursor: default;
-  }
-  
-  .team-stats li:hover {
-    transform: none;
-  }
-} */
-
-/* Mobile: Show single camera view */
 @media (max-width: 767px) {
-  .spectator-cameras-grid {
-    display: none;
-  }
-  
-  .spectator-camera-section {
-    display: flex;
-  }
-  
-  .battle-overview {
-    flex-direction: column;
-    gap: 1vh;
-    padding: 1vh 2vw;
-    min-height: auto;
-  }
-  
-  .team-stats {
-    min-height: 12vh;
-  }
-  
-  .team-stats ul {
-    max-height: 8vh;
-  }
-  
-  .battle-divider {
-    order: -1;
-    margin: 0;
-    padding: 0.5vh 0;
-  }
-  
-  .spectator-stats {
-    flex-direction: column;
-    gap: 0.5vh;
-  }
-  
-  #spectator-camera-feed {
-    max-height: 25vh;
-  }
+  .spectator-camera-section { display: flex; }
+  .battle-overview { flex-direction: column; gap: 1vh; padding: 1vh 2vw; min-height: auto; }
+  .team-stats { min-height: 12vh; }
+  .team-stats ul { max-height: 8vh; }
+  .battle-divider { order: -1; margin: 0; padding: 0.5vh 0; }
+  .spectator-stats { flex-direction: column; gap: 0.5vh; }
+  #spectator-camera-feed { max-height: 25vh; }
+}
+@media (max-width: 30rem) {
+  .spectator-main { padding: 0.5vh 1vw; gap: 0.5vh; }
+  .battle-overview { padding: 1vh 1vw; }
+  .team-stats li { font-size: 0.7rem; padding: 0.2vh 0.3vw; }
+  .spectator-stats > div { font-size: 0.6rem; padding: 0.5vh 0.5vw; }
 }
 
-@media (max-width: 30rem) {
-  .spectator-main {
-    padding: 0.5vh 1vw;
-    gap: 0.5vh;
-  }
-  
-  .battle-overview {
-    padding: 1vh 1vw;
-  }
-  
-  .team-stats li {
-    font-size: 0.7rem;
-    padding: 0.2vh 0.3vw;
-  }
-  
-  .spectator-stats > div {
-    font-size: 0.6rem;
-    padding: 0.5vh 0.5vw;
-  }
-}
 /* Blood Damage System */
 .blood-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
   pointer-events: none;
   z-index: 90;
   transition: opacity 0.3s ease;
 }
-
 #blood-canvas {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
   pointer-events: none;
 }
-
 .blood-splats {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
   pointer-events: none;
 }
-
 .blood-splat {
   position: absolute;
-  width: 60px;
-  height: 60px;
+  width: 60px; height: 60px;
   background: radial-gradient(circle, 
     rgba(139, 0, 0, 0.8) 0%, 
     rgba(139, 0, 0, 0.6) 30%, 
@@ -1100,14 +821,11 @@ input[type="text"]:focus {
   animation: splatAppear 0.3s ease-out;
   pointer-events: none;
 }
-
 .blood-splat::before {
   content: '';
   position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 80%;
-  height: 80%;
+  top: 50%; left: 50%;
+  width: 80%; height: 80%;
   background: radial-gradient(circle, 
     rgba(220, 20, 60, 0.9) 0%, 
     rgba(139, 0, 0, 0.7) 50%, 
@@ -1115,29 +833,16 @@ input[type="text"]:focus {
   border-radius: 50%;
   transform: translate(-50%, -50%);
 }
-
 @keyframes splatAppear {
-  0% {
-    transform: scale(0) rotate(0deg);
-    opacity: 0;
-  }
-  50% {
-    transform: scale(1.2) rotate(180deg);
-    opacity: 1;
-  }
-  100% {
-    transform: scale(1) rotate(360deg);
-    opacity: 0.8;
-  }
+  0% { transform: scale(0) rotate(0deg); opacity: 0; }
+  50% { transform: scale(1.2) rotate(180deg); opacity: 1; }
+  100% { transform: scale(1) rotate(360deg); opacity: 0.8; }
 }
-
 /* Progressive Damage Vignette */
 .damage-vignette {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
   background: radial-gradient(circle at center, 
     transparent 0%, 
     transparent 40%, 
@@ -1148,7 +853,6 @@ input[type="text"]:focus {
   transition: opacity 0.5s ease;
   pointer-events: none;
 }
-
 .damage-vignette.low-health {
   opacity: 0.3;
   background: radial-gradient(circle at center, 
@@ -1158,7 +862,6 @@ input[type="text"]:focus {
     rgba(139, 0, 0, 0.3) 70%, 
     rgba(139, 0, 0, 0.5) 100%);
 }
-
 .damage-vignette.critical-health {
   opacity: 0.6;
   background: radial-gradient(circle at center, 
@@ -1169,22 +872,27 @@ input[type="text"]:focus {
     rgba(139, 0, 0, 0.7) 100%);
   animation: criticalPulse 1s ease-in-out infinite alternate;
 }
-
 @keyframes criticalPulse {
   0% { opacity: 0.6; }
   100% { opacity: 0.8; }
 }
-
+.damage-vignette.max-blood {
+  opacity: 0.9;
+  background: radial-gradient(circle at center,
+    rgba(139,0,0,0.7) 0%,
+    rgba(139,0,0,0.8) 40%,
+    rgba(139,0,0,0.9) 60%,
+    rgba(139,0,0,1) 100%);
+  filter: blur(1px);
+}
 /* Damage Indicator */
 .damage-indicator {
   position: fixed;
-  top: 50%;
-  left: 50%;
+  top: 50%; left: 50%;
   transform: translate(-50%, -50%);
   z-index: 95;
   pointer-events: none;
 }
-
 .damage-text {
   color: var(--neon-red);
   font-family: 'Orbitron', monospace;
@@ -1197,32 +905,19 @@ input[type="text"]:focus {
   animation: damageFlash 0.5s ease-out;
   text-align: center;
 }
-
 @keyframes damageFlash {
-  0% {
-    opacity: 0;
-    transform: scale(0.5);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.2);
-  }
-  100% {
-    opacity: 0;
-    transform: scale(1);
-  }
+  0% { opacity: 0; transform: scale(0.5); }
+  50% { opacity: 1; transform: scale(1.2); }
+  100% { opacity: 0; transform: scale(1); }
 }
-
 /* Heal Indicator */
 .heal-indicator {
   position: fixed;
-  top: 40%;
-  left: 50%;
+  top: 40%; left: 50%;
   transform: translate(-50%, -50%);
   z-index: 95;
   pointer-events: none;
 }
-
 .heal-text {
   color: var(--neon-green);
   font-family: 'Orbitron', monospace;
@@ -1234,57 +929,38 @@ input[type="text"]:focus {
   animation: healFloat 1s ease-out;
   text-align: center;
 }
-
 @keyframes healFloat {
-  0% {
-    opacity: 0;
-    transform: translateY(20px) scale(0.8);
-  }
-  50% {
-    opacity: 1;
-    transform: translateY(-10px) scale(1.1);
-  }
-  100% {
-    opacity: 0;
-    transform: translateY(-30px) scale(1);
-  }
+  0% { opacity: 0; transform: translateY(20px) scale(0.8); }
+  50% { opacity: 1; transform: translateY(-10px) scale(1.1); }
+  100% { opacity: 0; transform: translateY(-30px) scale(1); }
 }
-
 /* Screen Shake Effect */
 .screen-shake {
   animation: screenShake 0.3s ease-in-out;
 }
-
 @keyframes screenShake {
   0%, 100% { transform: translateX(0); }
   25% { transform: translateX(-5px) translateY(-2px); }
   50% { transform: translateX(5px) translateY(2px); }
   75% { transform: translateX(-3px) translateY(-1px); }
 }
-
 /* Spectator Blood Overlays for Player Cameras */
 .player-camera-block {
   position: relative;
 }
-
 .spectator-blood-overlay {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
   pointer-events: none;
   z-index: 5;
   border-radius: 0.5rem;
   overflow: hidden;
 }
-
 .spectator-damage-vignette {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
   background: radial-gradient(circle at center, 
     transparent 0%, 
     transparent 50%, 
@@ -1293,27 +969,6 @@ input[type="text"]:focus {
   opacity: 0;
   transition: opacity 0.3s ease;
 }
-.damage-vignette.max-blood {
-  opacity: 0.9;
-  background: radial-gradient(circle at center,
-    rgba(139,0,0,0.7) 0%,
-    rgba(139,0,0,0.8) 40%,
-    rgba(139,0,0,0.9) 60%,
-    rgba(139,0,0,1) 100%);
-  filter: blur(1px);
-}
-html, body {
-  touch-action: pan-y;
-  overscroll-behavior: none;
-}
-* {
-  touch-action: manipulation;
-}
 
-
-#spectator-cameras-grid { display: none !important; }
-
-
-.hide {
-  display: none !important;
-}
+/* Hide utility */
+.hide { display: none !important; }
