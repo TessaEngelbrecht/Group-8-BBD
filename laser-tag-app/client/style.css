@@ -978,7 +978,7 @@ input[type="text"]:focus {
 /* RESPONSIVE BREAKPOINTS */
 
 /* Desktop: Show multi-camera grid */
-@media (min-width: 768px) {
+/* @media (min-width: 768px) {
   .spectator-cameras-grid {
     display: grid;
   }
@@ -994,7 +994,7 @@ input[type="text"]:focus {
   .team-stats li:hover {
     transform: none;
   }
-}
+} */
 
 /* Mobile: Show single camera view */
 @media (max-width: 767px) {
@@ -1309,3 +1309,6 @@ html, body {
 * {
   touch-action: manipulation;
 }
+
+
+#spectator-cameras-grid { display: none !important; }

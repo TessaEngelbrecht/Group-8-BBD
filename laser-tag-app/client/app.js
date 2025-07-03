@@ -498,61 +498,61 @@ function closePeerConnection(playerId) {
   removeSocketListeners(playerId);
 }
 
-function requestPlayerCameraDesktop(playerId) {
-  closePeerConnection(playerId);
-  socket.emit('spectator-watch-player', { sessionId, playerId });
+// function requestPlayerCameraDesktop(playerId) {
+//   closePeerConnection(playerId);
+//   socket.emit('spectator-watch-player', { sessionId, playerId });
 
-  const pc = new RTCPeerConnection();
-  spectatorPeerConnections[playerId] = pc;
-  pendingIceCandidates[playerId] = [];
+//   const pc = new RTCPeerConnection();
+//   spectatorPeerConnections[playerId] = pc;
+//   pendingIceCandidates[playerId] = [];
 
-  pc.ontrack = event => {
-    const video = document.getElementById(`camera-${playerId}`);
-    const placeholder = document.getElementById(`placeholder-${playerId}`);
-    if (video && placeholder) {
-      video.srcObject = event.streams[0];
-      video.style.display = 'block';
-      placeholder.style.display = 'none';
-    }
-  };
+//   pc.ontrack = event => {
+//     const video = document.getElementById(`camera-${playerId}`);
+//     const placeholder = document.getElementById(`placeholder-${playerId}`);
+//     if (video && placeholder) {
+//       video.srcObject = event.streams[0];
+//       video.style.display = 'block';
+//       placeholder.style.display = 'none';
+//     }
+//   };
 
-  pc.onicecandidate = event => {
-    if (event.candidate && pc.signalingState !== 'closed') {
-      socket.emit('webrtc-ice-candidate', { to: playerId, candidate: event.candidate });
-    }
-  };
+//   pc.onicecandidate = event => {
+//     if (event.candidate && pc.signalingState !== 'closed') {
+//       socket.emit('webrtc-ice-candidate', { to: playerId, candidate: event.candidate });
+//     }
+//   };
 
-  const handleOffer = async ({ from, offer }) => {
-    if (from === playerId && pc.signalingState !== 'closed') {
-      try {
-        await pc.setRemoteDescription(new RTCSessionDescription(offer));
-        const answer = await pc.createAnswer();
-        await pc.setLocalDescription(answer);
-        socket.emit('webrtc-answer', { to: playerId, answer });
-        (pendingIceCandidates[playerId] || []).forEach(candidate => {
-          pc.addIceCandidate(new RTCIceCandidate(candidate)).catch(() => { });
-        });
-        pendingIceCandidates[playerId] = [];
-      } catch (error) {
-        console.warn(`WebRTC offer error for player ${playerId}:`, error);
-      }
-    }
-  };
+//   const handleOffer = async ({ from, offer }) => {
+//     if (from === playerId && pc.signalingState !== 'closed') {
+//       try {
+//         await pc.setRemoteDescription(new RTCSessionDescription(offer));
+//         const answer = await pc.createAnswer();
+//         await pc.setLocalDescription(answer);
+//         socket.emit('webrtc-answer', { to: playerId, answer });
+//         (pendingIceCandidates[playerId] || []).forEach(candidate => {
+//           pc.addIceCandidate(new RTCIceCandidate(candidate)).catch(() => { });
+//         });
+//         pendingIceCandidates[playerId] = [];
+//       } catch (error) {
+//         console.warn(`WebRTC offer error for player ${playerId}:`, error);
+//       }
+//     }
+//   };
 
-  const handleIceCandidate = ({ from, candidate }) => {
-    if (from === playerId && candidate && pc.signalingState !== 'closed') {
-      if (pc.remoteDescription) {
-        pc.addIceCandidate(new RTCIceCandidate(candidate)).catch(() => { });
-      } else {
-        pendingIceCandidates[playerId].push(candidate);
-      }
-    }
-  };
+//   const handleIceCandidate = ({ from, candidate }) => {
+//     if (from === playerId && candidate && pc.signalingState !== 'closed') {
+//       if (pc.remoteDescription) {
+//         pc.addIceCandidate(new RTCIceCandidate(candidate)).catch(() => { });
+//       } else {
+//         pendingIceCandidates[playerId].push(candidate);
+//       }
+//     }
+//   };
 
-  socketEventListeners[playerId] = { offer: handleOffer, iceCandidate: handleIceCandidate };
-  socket.on('webrtc-offer', handleOffer);
-  socket.on('webrtc-ice-candidate', handleIceCandidate);
-}
+//   socketEventListeners[playerId] = { offer: handleOffer, iceCandidate: handleIceCandidate };
+//   socket.on('webrtc-offer', handleOffer);
+//   socket.on('webrtc-ice-candidate', handleIceCandidate);
+// }
 
 function selectPlayerCameraMobile(playerId, playerName) {
   selectedPlayerMobile = playerId;
@@ -612,7 +612,6 @@ function selectPlayerCameraMobile(playerId, playerName) {
   socket.on('webrtc-ice-candidate', handleIceCandidateMobile);
 }
 
-// Spectator UI updates
 function updateSpectatorView(lobby) {
   const redList = document.getElementById('red-team-list');
   const blueList = document.getElementById('blue-team-list');
@@ -627,58 +626,46 @@ function updateSpectatorView(lobby) {
     li.dataset.playerId = p.id;
     li.dataset.playerName = p.name;
     li.dataset.team = i % 2 === 0 ? 'red' : 'blue';
-
-    // Mobile view
-    if (window.innerWidth <= 767) {
-      li.style.cursor = 'pointer';
-      li.onclick = () => selectPlayerCameraMobile(p.id, p.name);
-      if (selectedPlayerMobile === p.id) li.classList.add('selected');
-    }
-
+    li.style.cursor = 'pointer';
+    li.onclick = () => selectPlayerCameraMobile(p.id, p.name);
+    if (selectedPlayerMobile === p.id) li.classList.add('selected');
     if (i % 2 === 0) redList.appendChild(li);
     else blueList.appendChild(li);
   });
 
   redScore.textContent = teamPoints.red;
   blueScore.textContent = teamPoints.blue;
-
-  if (window.innerWidth > 767) {
-    const currentPlayerIds = lobby.players.map(p => p.id).join(',');
-    if (currentPlayerIds !== lastPlayerIds.join(',')) {
-      updateCameraGrid(lobby.players);
-      lastPlayerIds = lobby.players.map(p => p.id);
-    }
-  }
 }
 
 
-// Desktop: Create camera grid (only when player list changes)
-function updateCameraGrid(players) {
-  const grid = document.getElementById('spectator-cameras-grid');
-  grid.innerHTML = '';
 
-  // Close all existing connections since we're rebuilding
-  Object.keys(spectatorPeerConnections).forEach(closePeerConnection);
+// // Desktop: Create camera grid (only when player list changes)
+// function updateCameraGrid(players) {
+//   const grid = document.getElementById('spectator-cameras-grid');
+//   grid.innerHTML = '';
 
-  players.forEach((player, i) => {
-    const team = i % 2 === 0 ? 'red' : 'blue';
-    const block = document.createElement('div');
-    block.className = `player-camera-block ${team}-team`;
-    block.innerHTML = `
-      <div class="player-camera-header ${team}-team">
-        ${team === 'red' ? '🔴' : '🔵'} ${player.name}
-      </div>
-      <video class="player-camera-video" id="camera-${player.id}" autoplay playsinline muted style="display:none;"></video>
-      <div class="player-camera-placeholder" id="placeholder-${player.id}">
-        Waiting for camera feed...
-      </div>
-    `;
-    grid.appendChild(block);
+//   // Close all existing connections since we're rebuilding
+//   Object.keys(spectatorPeerConnections).forEach(closePeerConnection);
 
-    // Request camera feed for this player
-    requestPlayerCameraDesktop(player.id);
-  });
-}
+//   players.forEach((player, i) => {
+//     const team = i % 2 === 0 ? 'red' : 'blue';
+//     const block = document.createElement('div');
+//     block.className = `player-camera-block ${team}-team`;
+//     block.innerHTML = `
+//       <div class="player-camera-header ${team}-team">
+//         ${team === 'red' ? '🔴' : '🔵'} ${player.name}
+//       </div>
+//       <video class="player-camera-video" id="camera-${player.id}" autoplay playsinline muted style="display:none;"></video>
+//       <div class="player-camera-placeholder" id="placeholder-${player.id}">
+//         Waiting for camera feed...
+//       </div>
+//     `;
+//     grid.appendChild(block);
+
+//     // Request camera feed for this player
+//     requestPlayerCameraDesktop(player.id);
+//   });
+// }
 
 
 
