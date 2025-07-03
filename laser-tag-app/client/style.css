@@ -1312,3 +1312,8 @@ html, body {
 
 
 #spectator-cameras-grid { display: none !important; }
+
+
+.hide {
+  display: none !important;
+}

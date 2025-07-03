@@ -112,10 +112,11 @@ socket.on('lobbyUpdate', lobby => {
 });
 
 socket.on('gameStarted', lobby => {
+  document.getElementById('particles-bg').style.display = 'none';
   updateLobby(lobby);
   const me = lobby.players.find(p => p.name === username);
   const isSpectator = !me;
-
+  
   if (isSpectator) {
     switchScreen('lobby-screen', 'spectator-screen');
     updateSpectatorView(lobby);
