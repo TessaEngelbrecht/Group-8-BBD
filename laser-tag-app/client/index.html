@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>🎯 Neon Laser Arena</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
   <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 </head>
@@ -18,36 +18,34 @@
   <div id="team-ambient" class="hidden"></div>
 
   <!-- LOGIN SCREEN -->
-  <div class="screen neon-container" id="login-screen">
+  <section class="screen neon-container" id="login-screen">
     <div class="logo-container">
       <h1 class="neon-text">🎯 NEON ARENA</h1>
       <div class="subtitle">LASER TAG REVOLUTION</div>
     </div>
     <div class="input-container">
-      <input type="text" id="username" maxlength="15" placeholder="Enter your callsign..." />
+      <input type="text" id="username" maxlength="15" placeholder="Enter your callsign..." autocomplete="off" />
       <button id="continue-btn" class="neon-btn primary">
         <span>ENTER ARENA</span>
         <div class="btn-glow"></div>
       </button>
     </div>
     <div class="scan-lines"></div>
-  </div>
+  </section>
 
   <!-- CHOOSE SCREEN -->
-  <div class="screen neon-container hidden" id="choose-screen">
+  <section class="screen neon-container hidden" id="choose-screen">
     <div class="welcome-header">
       <h2 class="neon-text">WELCOME, <span id="display-username" class="highlight"></span></h2>
       <div class="subtitle">Choose your mission</div>
     </div>
-
     <div class="mission-options">
       <button id="create-session-btn" class="neon-btn create">
         <span>➕ CREATE MISSION</span>
         <div class="btn-glow"></div>
       </button>
-
       <div class="join-section">
-        <input type="text" id="join-code" placeholder="Mission Code..." />
+        <input type="text" id="join-code" placeholder="Mission Code..." autocomplete="off" />
         <div class="join-buttons">
           <button id="join-player-btn" class="neon-btn join">
             <span>🎮 JOIN AS WARRIOR</span>
@@ -61,19 +59,18 @@
       </div>
     </div>
     <div class="scan-lines"></div>
-  </div>
+  </section>
 
   <!-- LOBBY SCREEN -->
-  <div class="screen neon-container hidden" id="lobby-screen">
+  <section class="screen neon-container hidden" id="lobby-screen">
     <div class="lobby-header">
       <h2 class="neon-text">MISSION CONTROL</h2>
       <div class="mission-code">
         <span class="code-label">MISSION CODE:</span>
         <span id="game-id-display" class="mission-id"></span>
-        <button id="copy-game-id-btn" class="copy-btn">📋</button>
+        <button id="copy-game-id-btn" class="copy-btn" title="Copy Mission Code">📋</button>
       </div>
     </div>
-
     <div class="teams-container">
       <div class="team-section red-team">
         <h3>🔴 RED SQUAD</h3>
@@ -85,12 +82,10 @@
         <ul id="blue-players"></ul>
       </div>
     </div>
-
     <div class="spectators-section">
       <h3>👁 OBSERVERS</h3>
       <ul id="spectators-list"></ul>
     </div>
-
     <div class="mission-status">
       <p id="game-status" class="status-text"></p>
       <button id="start-game-btn" class="neon-btn start hidden">
@@ -99,10 +94,10 @@
       </button>
     </div>
     <div class="scan-lines"></div>
-  </div>
+  </section>
 
   <!-- GAME SCREEN -->
-  <div class="screen game-container hidden" id="game-screen">
+  <section class="screen game-container hidden" id="game-screen">
     <!-- Top HUD -->
     <div class="hud-top">
       <div class="timer-container">
@@ -110,7 +105,6 @@
       </div>
       <div id="player-symbol" class="team-indicator"></div>
     </div>
-
     <!-- Main Game Area -->
     <div class="game-main">
       <div class="camera-container">
@@ -121,7 +115,6 @@
           <div class="scan-overlay"></div>
         </div>
       </div>
-
       <!-- Floating UI Elements -->
       <div class="floating-ui">
         <div class="leaderboard-mini" id="leaderboard"></div>
@@ -135,7 +128,6 @@
         </div>
       </div>
     </div>
-
     <!-- Bottom Controls -->
     <div class="controls-bottom">
       <button id="shoot-btn" class="shoot-button">
@@ -143,69 +135,57 @@
         <div class="shoot-glow"></div>
       </button>
     </div>
-
     <!-- Blood Damage Overlay -->
     <div id="blood-overlay" class="blood-overlay">
       <canvas id="blood-canvas"></canvas>
       <div class="blood-splats"></div>
       <div class="damage-vignette"></div>
     </div>
-    
     <!-- Damage Indicator -->
     <div id="damage-indicator" class="damage-indicator hidden">
       <div class="damage-text">TAKING DAMAGE!</div>
       <div class="damage-direction"></div>
     </div>
-    
     <!-- Heal Indicator -->
     <div id="heal-indicator" class="heal-indicator hidden">
       <div class="heal-text">+HEALTH</div>
     </div>
-  </div>
+  </section>
 
-<!-- SPECTATOR SCREEN -->
-<div class="screen hidden" id="spectator-screen">
-  <div class="spectator-header">
-    <h2 class="neon-text">👁 OBSERVER MODE</h2>
-    <div id="game-timer-spectator" class="timer">⏱️ 2:00</div>
-  </div>
-
-  <div class="spectator-main">
-    <div class="battle-overview">
-      <div class="team-stats red-stats">
-        <h3>🔴 RED SQUAD</h3>
-        <div class="team-score" id="red-score">100</div>
-        <ul id="red-team-list"></ul>
+  <!-- SPECTATOR SCREEN -->
+  <section class="screen hidden" id="spectator-screen">
+    <div class="spectator-header">
+      <h2 class="neon-text">👁 OBSERVER MODE</h2>
+      <div id="game-timer-spectator" class="timer">⏱️ 2:00</div>
+    </div>
+    <div class="spectator-main">
+      <div class="battle-overview">
+        <div class="team-stats red-stats">
+          <h3>🔴 RED SQUAD</h3>
+          <div class="team-score" id="red-score">100</div>
+          <ul id="red-team-list"></ul>
+        </div>
+        <div class="battle-divider">⚡ VS ⚡</div>
+        <div class="team-stats blue-stats">
+          <h3>🔵 BLUE SQUAD</h3>
+          <div class="team-score" id="blue-score">100</div>
+          <ul id="blue-team-list"></ul>
+        </div>
       </div>
-
-      <div class="battle-divider">⚡ VS ⚡</div>
-
-      <div class="team-stats blue-stats">
-        <h3>🔵 BLUE SQUAD</h3>
-        <div class="team-score" id="blue-score">100</div>
-        <ul id="blue-team-list"></ul>
+      <!-- MOBILE: Single camera view -->
+      <div class="spectator-camera-section">
+        <div class="spectator-camera-label" id="spectator-camera-label">
+          Click a player to watch their feed
+        </div>
+        <video id="spectator-camera-feed" autoplay playsinline controls style="display:none;"></video>
+      </div>
+      <div class="spectator-stats">
+        <div class="modifiers-log"></div>
+        <div class="purple-log"></div>
       </div>
     </div>
-
-    <!-- MOBILE: Single camera view -->
-    <div class="spectator-camera-section">
-      <div class="spectator-camera-label" id="spectator-camera-label">
-        Click a player to watch their feed
-      </div>
-      <video id="spectator-camera-feed" autoplay playsinline controls style="display:none;"></video>
-    </div>
-    
-
-    <div class="spectator-stats">
-      <div class="modifiers-log"></div>
-      <div class="purple-log"></div>
-    </div>
-  </div>
-
-  <div class="scan-lines"></div>
-</div>
-
-
+    <div class="scan-lines"></div>
+  </section>
 
   <!-- GAME OVER OVERLAY -->
   <div id="game-over-overlay" class="hidden">
