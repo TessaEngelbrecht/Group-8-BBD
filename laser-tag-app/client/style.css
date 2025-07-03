@@ -24,6 +24,20 @@ body {
   overflow-x: hidden;
   position: relative;
   min-height: 100vh;
+  opacity: 0.9;
+}
+html, body {
+  font-family: 'Orbitron', monospace;
+  background: var(--dark-bg);
+  color: var(--text-primary);
+  height: 100%;
+  width: 100%;
+  overflow-x: hidden; /* Only hide horizontal scroll */
+  overflow-y: hidden; /* Only hide vertical scroll */
+  overscroll-behavior: none;
+  margin: 0;
+  padding: 0;
+  position: relative; /* Important for particles positioning */
 }
 
 #particles-bg {
@@ -32,8 +46,7 @@ body {
   left: 0;
   width: 100vw;
   height: 100vh;
-  z-index: -2;
-  /* More, bigger, and brighter particles! */
+  z-index: -2; /* Keep this negative so it stays behind content */
   background:
     radial-gradient(circle at 15% 25%, rgba(0,255,255,0.55) 0.8vw, transparent 1.6vw),
     radial-gradient(circle at 40% 70%, rgba(255,0,64,0.45) 1vw, transparent 2vw),
@@ -44,10 +57,11 @@ body {
     radial-gradient(circle at 55% 40%, rgba(0,255,255,0.55) 0.9vw, transparent 1.8vw),
     radial-gradient(circle at 90% 80%, rgba(255,0,64,0.60) 1vw, transparent 2vw);
   background-size: cover;
-  opacity: 0.8; /* Increase opacity for more punch */
+  opacity: 0.8;
   animation: particleFloat 18s infinite linear;
   pointer-events: none;
 }
+
 #particles-bg::after {
   content: "";
   position: absolute;
@@ -690,62 +704,616 @@ input[type="text"]:focus {
   transform: scale(1.07);
   box-shadow: 0 0 1.2em var(--neon-green);
 }
-.spectator-header {
-  width: 100%;
-  text-align: center;
-  font-size: 2rem;
-  color: var(--neon-yellow);
-  margin-bottom: 1.5rem;
-  text-shadow: 0 0 0.7rem var(--neon-yellow);
+/* SPECTATOR SCREEN - Single Screen Layout */
+
+
+
+/* SPECTATOR SCREEN - Responsive Layout */
+#spectator-screen {
+  padding: 0;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: var(--darker-bg);
 }
 
-.battle-overview {
+.spectator-header {
+  flex-shrink: 0;
+  text-align: center;
+  padding: 1vh 2vw;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(0.6rem);
+  border-bottom: 0.06rem solid rgba(0, 255, 255, 0.3);
+}
+
+.spectator-header h2 {
+  font-size: clamp(1.2rem, 4vw, 2rem);
+  color: var(--neon-yellow);
+  text-shadow: 0 0 0.7rem var(--neon-yellow);
+  margin-bottom: 0.5vh;
+}
+
+.spectator-header .timer {
+  font-size: clamp(1rem, 3vw, 1.5rem);
+  color: var(--neon-yellow);
+  text-shadow: 0 0 0.6rem currentColor;
+}
+
+/* Main Content Area */
+.spectator-main {
+  flex: 1;
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
+  padding: 1vh 2vw;
+  gap: 1vh;
+  overflow: hidden;
+}
+
+/* Battle Overview - Compact */
+.battle-overview {
+  flex-shrink: 0;
+  display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  width: 95%;
-  max-width: 48rem;
-  margin: 0 auto 2rem auto;
+  align-items: stretch;
   background: rgba(10, 10, 16, 0.92);
-  border-radius: 1.2rem;
-  box-shadow: 0 0 1.5rem var(--neon-blue), 0 0 1.5rem var(--neon-red);
-  padding: 2vw 2vw;
+  border-radius: 0.8rem;
+  box-shadow: 0 0 1rem var(--neon-blue), 0 0 1rem var(--neon-red);
+  padding: 1.5vh 2vw;
   gap: 2vw;
+  height: auto;
+  min-height: 15vh;
 }
 
 .team-stats {
-  flex: 1 1 0;
+  flex: 1;
   background: rgba(0,0,0,0.3);
-  border-radius: 1em;
-  padding: 1em 0.5em;
-  margin: 0 0.5em;
-  min-width: 11em;
+  border-radius: 0.6rem;
+  padding: 1vh 1vw;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.team-stats h3 {
+  font-size: clamp(0.9rem, 2.5vw, 1.2rem);
+  margin-bottom: 0.5vh;
+  text-align: center;
+  white-space: nowrap;
 }
 
 .red-stats {
-  border: 0.15em solid var(--neon-red);
+  border: 0.1rem solid var(--neon-red);
   color: var(--neon-red);
-  box-shadow: 0 0 1.2em var(--neon-red) inset;
+  box-shadow: 0 0 0.8rem var(--neon-red) inset;
 }
 
 .blue-stats {
-  border: 0.15em solid var(--neon-blue);
+  border: 0.1rem solid var(--neon-blue);
   color: var(--neon-blue);
-  box-shadow: 0 0 1.2em var(--neon-blue) inset;
+  box-shadow: 0 0 0.8rem var(--neon-blue) inset;
 }
 
 .team-score {
-  font-size: 2em;
+  font-size: clamp(1.5rem, 5vw, 2.5rem);
   font-weight: 900;
-  margin: 0.5em 0 0.7em 0;
-  text-shadow: 0 0 0.5em currentColor;
+  text-align: center;
+  margin: 0.5vh 0;
+  text-shadow: 0 0 0.5rem currentColor;
+}
+
+.team-stats ul {
+  flex: 1;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  overflow-y: auto;
+  max-height: 8vh;
+}
+
+.team-stats li {
+  padding: 0.3vh 0.5vw;
+  margin: 0.2vh 0;
+  border-radius: 0.3rem;
+  font-size: clamp(0.7rem, 2vw, 0.9rem);
+  text-align: center;
+  background: rgba(255, 255, 255, 0.1);
+  border: 0.05rem solid currentColor;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.team-stats li:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.02);
+}
+
+.team-stats li.selected {
+  background: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 0 0.5rem currentColor;
 }
 
 .battle-divider {
-  font-size: 2.5em;
+  font-size: clamp(1.5rem, 4vw, 2.2rem);
   color: var(--neon-yellow);
   align-self: center;
-  margin: 0 1vw;
-  text-shadow: 0 0 1em var(--neon-yellow);
+  text-shadow: 0 0 1rem var(--neon-yellow);
+  animation: vsGlow 1.5s ease-in-out infinite;
+  white-space: nowrap;
+}
+
+/* DESKTOP: Multi-Camera Grid */
+.spectator-cameras-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1vh;
+  min-height: 0;
+  padding: 0.5vh 0;
+}
+
+.player-camera-block {
+  background: rgba(10, 10, 16, 0.9);
+  border-radius: 0.8rem;
+  padding: 1vh;
+  border: 0.1rem solid var(--neon-blue);
+  box-shadow: 0 0 0.8rem rgba(0, 255, 255, 0.2);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.player-camera-block.red-team {
+  border-color: var(--neon-red);
+  box-shadow: 0 0 0.8rem rgba(255, 0, 64, 0.2);
+}
+
+.player-camera-block.blue-team {
+  border-color: var(--neon-blue);
+  box-shadow: 0 0 0.8rem rgba(0, 255, 255, 0.2);
+}
+
+.player-camera-header {
+  text-align: center;
+  margin-bottom: 0.5vh;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-shadow: 0 0 0.5rem currentColor;
+}
+
+.player-camera-header.red-team {
+  color: var(--neon-red);
+}
+
+.player-camera-header.blue-team {
+  color: var(--neon-blue);
+}
+
+.player-camera-video {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  min-height: 150px;
+  object-fit: cover;
+  border-radius: 0.5rem;
+  background: rgba(0, 0, 0, 0.5);
+  border: 0.05rem solid currentColor;
+}
+
+.player-camera-placeholder {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 0.5rem;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  text-align: center;
+  min-height: 150px;
+  border: 0.05rem dashed currentColor;
+}
+
+/* MOBILE: Single Camera View */
+.spectator-camera-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1vh;
+  min-height: 0;
+}
+
+.spectator-camera-label {
+  text-align: center;
+  color: var(--neon-blue);
+  font-weight: bold;
+  font-size: clamp(0.8rem, 2.5vw, 1rem);
+  text-shadow: 0 0 0.5rem currentColor;
+}
+
+#spectator-camera-feed {
+  width: 100%;
+  height: 100%;
+  max-height: 35vh;
+  object-fit: cover;
+  border: 0.15rem solid var(--neon-blue);
+  border-radius: 0.8rem;
+  box-shadow: 0 0 1rem var(--neon-blue);
+  background: rgba(0, 0, 0, 0.5);
+}
+
+/* Stats Section */
+.spectator-stats {
+  flex-shrink: 0;
+  display: flex;
+  gap: 1vw;
+  height: auto;
+  min-height: 8vh;
+}
+
+.spectator-stats > div {
+  flex: 1;
+  background: rgba(10, 10, 16, 0.93);
+  border-radius: 0.6rem;
+  padding: 1vh 1vw;
+  font-size: clamp(0.6rem, 1.8vw, 0.8rem);
+  text-align: center;
+  border: 0.08rem solid;
+  overflow: hidden;
+}
+
+.modifiers-log {
+  border-color: var(--neon-blue);
+  color: var(--neon-blue);
+}
+
+.purple-log {
+  border-color: var(--neon-red);
+  color: var(--neon-red);
+}
+
+/* RESPONSIVE BREAKPOINTS */
+
+/* Desktop: Show multi-camera grid */
+/* @media (min-width: 768px) {
+  .spectator-cameras-grid {
+    display: grid;
+  }
+  
+  .spectator-camera-section {
+    display: none;
+  }
+  
+  .team-stats li {
+    cursor: default;
+  }
+  
+  .team-stats li:hover {
+    transform: none;
+  }
+} */
+
+/* Mobile: Show single camera view */
+@media (max-width: 767px) {
+  .spectator-cameras-grid {
+    display: none;
+  }
+  
+  .spectator-camera-section {
+    display: flex;
+  }
+  
+  .battle-overview {
+    flex-direction: column;
+    gap: 1vh;
+    padding: 1vh 2vw;
+    min-height: auto;
+  }
+  
+  .team-stats {
+    min-height: 12vh;
+  }
+  
+  .team-stats ul {
+    max-height: 8vh;
+  }
+  
+  .battle-divider {
+    order: -1;
+    margin: 0;
+    padding: 0.5vh 0;
+  }
+  
+  .spectator-stats {
+    flex-direction: column;
+    gap: 0.5vh;
+  }
+  
+  #spectator-camera-feed {
+    max-height: 25vh;
+  }
+}
+
+@media (max-width: 30rem) {
+  .spectator-main {
+    padding: 0.5vh 1vw;
+    gap: 0.5vh;
+  }
+  
+  .battle-overview {
+    padding: 1vh 1vw;
+  }
+  
+  .team-stats li {
+    font-size: 0.7rem;
+    padding: 0.2vh 0.3vw;
+  }
+  
+  .spectator-stats > div {
+    font-size: 0.6rem;
+    padding: 0.5vh 0.5vw;
+  }
+}
+/* Blood Damage System */
+.blood-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 90;
+  transition: opacity 0.3s ease;
+}
+
+#blood-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.blood-splats {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.blood-splat {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  background: radial-gradient(circle, 
+    rgba(139, 0, 0, 0.8) 0%, 
+    rgba(139, 0, 0, 0.6) 30%, 
+    rgba(139, 0, 0, 0.3) 60%, 
+    transparent 100%);
+  border-radius: 50%;
+  animation: splatAppear 0.3s ease-out;
+  pointer-events: none;
+}
+
+.blood-splat::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 80%;
+  height: 80%;
+  background: radial-gradient(circle, 
+    rgba(220, 20, 60, 0.9) 0%, 
+    rgba(139, 0, 0, 0.7) 50%, 
+    transparent 100%);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+@keyframes splatAppear {
+  0% {
+    transform: scale(0) rotate(0deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2) rotate(180deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(360deg);
+    opacity: 0.8;
+  }
+}
+
+/* Progressive Damage Vignette */
+.damage-vignette {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at center, 
+    transparent 0%, 
+    transparent 40%, 
+    rgba(139, 0, 0, 0) 60%, 
+    rgba(139, 0, 0, 0.1) 80%, 
+    rgba(139, 0, 0, 0.3) 100%);
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+}
+
+.damage-vignette.low-health {
+  opacity: 0.3;
+  background: radial-gradient(circle at center, 
+    transparent 0%, 
+    transparent 30%, 
+    rgba(139, 0, 0, 0.1) 50%, 
+    rgba(139, 0, 0, 0.3) 70%, 
+    rgba(139, 0, 0, 0.5) 100%);
+}
+
+.damage-vignette.critical-health {
+  opacity: 0.6;
+  background: radial-gradient(circle at center, 
+    transparent 0%, 
+    transparent 20%, 
+    rgba(139, 0, 0, 0.2) 40%, 
+    rgba(139, 0, 0, 0.4) 60%, 
+    rgba(139, 0, 0, 0.7) 100%);
+  animation: criticalPulse 1s ease-in-out infinite alternate;
+}
+
+@keyframes criticalPulse {
+  0% { opacity: 0.6; }
+  100% { opacity: 0.8; }
+}
+
+/* Damage Indicator */
+.damage-indicator {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 95;
+  pointer-events: none;
+}
+
+.damage-text {
+  color: var(--neon-red);
+  font-family: 'Orbitron', monospace;
+  font-weight: 900;
+  font-size: 2rem;
+  text-shadow: 
+    0 0 10px var(--neon-red),
+    0 0 20px var(--neon-red),
+    0 0 30px var(--neon-red);
+  animation: damageFlash 0.5s ease-out;
+  text-align: center;
+}
+
+@keyframes damageFlash {
+  0% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+}
+
+/* Heal Indicator */
+.heal-indicator {
+  position: fixed;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 95;
+  pointer-events: none;
+}
+
+.heal-text {
+  color: var(--neon-green);
+  font-family: 'Orbitron', monospace;
+  font-weight: 900;
+  font-size: 1.5rem;
+  text-shadow: 
+    0 0 10px var(--neon-green),
+    0 0 20px var(--neon-green);
+  animation: healFloat 1s ease-out;
+  text-align: center;
+}
+
+@keyframes healFloat {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-10px) scale(1.1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-30px) scale(1);
+  }
+}
+
+/* Screen Shake Effect */
+.screen-shake {
+  animation: screenShake 0.3s ease-in-out;
+}
+
+@keyframes screenShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px) translateY(-2px); }
+  50% { transform: translateX(5px) translateY(2px); }
+  75% { transform: translateX(-3px) translateY(-1px); }
+}
+
+/* Spectator Blood Overlays for Player Cameras */
+.player-camera-block {
+  position: relative;
+}
+
+.spectator-blood-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 5;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.spectator-damage-vignette {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at center, 
+    transparent 0%, 
+    transparent 50%, 
+    rgba(139, 0, 0, 0.2) 80%, 
+    rgba(139, 0, 0, 0.4) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.damage-vignette.max-blood {
+  opacity: 0.9;
+  background: radial-gradient(circle at center,
+    rgba(139,0,0,0.7) 0%,
+    rgba(139,0,0,0.8) 40%,
+    rgba(139,0,0,0.9) 60%,
+    rgba(139,0,0,1) 100%);
+  filter: blur(1px);
+}
+html, body {
+  touch-action: pan-y;
+  overscroll-behavior: none;
+}
+* {
+  touch-action: manipulation;
+}
+
+
+#spectator-cameras-grid { display: none !important; }
+
+
+.hide {
+  display: none !important;
 }

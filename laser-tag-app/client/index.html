@@ -24,7 +24,7 @@
       <div class="subtitle">LASER TAG REVOLUTION</div>
     </div>
     <div class="input-container">
-      <input type="text" id="username" placeholder="Enter your callsign..." />
+      <input type="text" id="username" maxlength="15" placeholder="Enter your callsign..." />
       <button id="continue-btn" class="neon-btn primary">
         <span>ENTER ARENA</span>
         <div class="btn-glow"></div>
@@ -143,15 +143,34 @@
         <div class="shoot-glow"></div>
       </button>
     </div>
+
+    <!-- Blood Damage Overlay -->
+    <div id="blood-overlay" class="blood-overlay">
+      <canvas id="blood-canvas"></canvas>
+      <div class="blood-splats"></div>
+      <div class="damage-vignette"></div>
+    </div>
+    
+    <!-- Damage Indicator -->
+    <div id="damage-indicator" class="damage-indicator hidden">
+      <div class="damage-text">TAKING DAMAGE!</div>
+      <div class="damage-direction"></div>
+    </div>
+    
+    <!-- Heal Indicator -->
+    <div id="heal-indicator" class="heal-indicator hidden">
+      <div class="heal-text">+HEALTH</div>
+    </div>
   </div>
 
-  <!-- SPECTATOR SCREEN -->
-  <div class="screen neon-container hidden" id="spectator-screen">
-    <div class="spectator-header">
-      <h2 class="neon-text">👁 OBSERVER MODE</h2>
-      <div id="game-timer-spectator" class="timer">⏱️ 2:00</div>
-    </div>
+<!-- SPECTATOR SCREEN -->
+<div class="screen hidden" id="spectator-screen">
+  <div class="spectator-header">
+    <h2 class="neon-text">👁 OBSERVER MODE</h2>
+    <div id="game-timer-spectator" class="timer">⏱️ 2:00</div>
+  </div>
 
+  <div class="spectator-main">
     <div class="battle-overview">
       <div class="team-stats red-stats">
         <h3>🔴 RED SQUAD</h3>
@@ -159,7 +178,7 @@
         <ul id="red-team-list"></ul>
       </div>
 
-      <div class="battle-divider">⚡ BATTLE ⚡</div>
+      <div class="battle-divider">⚡ VS ⚡</div>
 
       <div class="team-stats blue-stats">
         <h3>🔵 BLUE SQUAD</h3>
@@ -168,18 +187,32 @@
       </div>
     </div>
 
+    <!-- MOBILE: Single camera view -->
+    <div class="spectator-camera-section">
+      <div class="spectator-camera-label" id="spectator-camera-label">
+        Click a player to watch their feed
+      </div>
+      <video id="spectator-camera-feed" autoplay playsinline controls style="display:none;"></video>
+    </div>
+    
+
     <div class="spectator-stats">
       <div class="modifiers-log"></div>
       <div class="purple-log"></div>
     </div>
-    <div class="scan-lines"></div>
   </div>
+
+  <div class="scan-lines"></div>
+</div>
+
+
 
   <!-- GAME OVER OVERLAY -->
   <div id="game-over-overlay" class="hidden">
     <div class="victory-container">
       <h1 id="winner-text" class="victory-text">🏆 VICTORY</h1>
       <p class="restart-text">Preparing next mission...</p>
+      <button id="restart-btn" class="neon-btn primary">Restart</button>
       <div class="victory-effects"></div>
     </div>
   </div>
